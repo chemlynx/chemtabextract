@@ -8,7 +8,7 @@ Tests the header extension.
 import unittest
 import logging
 
-from tabledataextractor import Table
+from chemtabextract import Table
 
 log = logging.getLogger(__name__)
 

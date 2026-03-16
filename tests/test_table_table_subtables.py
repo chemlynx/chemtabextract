@@ -8,7 +8,7 @@ Tests the subtables.
 import unittest
 import logging
 
-from tabledataextractor import Table
+from chemtabextract import Table
 
 log = logging.getLogger(__name__)
 

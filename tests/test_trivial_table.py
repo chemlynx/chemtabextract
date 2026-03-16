@@ -8,7 +8,7 @@ Tests the TrivialTable object.
 import unittest
 import logging
 
-from tabledataextractor import TrivialTable
+from chemtabextract import TrivialTable
 
 log = logging.getLogger(__name__)
 
