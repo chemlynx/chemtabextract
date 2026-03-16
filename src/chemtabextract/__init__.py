@@ -1,23 +1,14 @@
 # -*- coding: utf-8 -*-
 """
-TableDataExtractor
-Extracts and standardizes data from tables.
-Algorithm from David W. Embley et. Al., DOI: 10.1007/s10032-016-0259-1
-jm2111@cam.ac.uk
+chemtabextract
+Extracts and standardises structured data from scientific tables.
+Algorithm from David W. Embley et al., DOI: 10.1007/s10032-016-0259-1
 ~~~~~~~~~~~~~~~~~
 """
 
 import logging
 
-__title__ = 'TableDataExtractor'
-__version__ = '1.5.11'
-__author__ = 'Juraj Mavračić'
-__email__ = 'jm2111@cam.ac.uk'
-__license__ = 'MIT License'
-__copyright__ = 'Copyright 2019 Juraj Mavracic'
+logging.getLogger(__name__).addHandler(logging.NullHandler())
 
-# global logging set-up, change the logging level here for development
-logging.basicConfig(level=logging.INFO, format='%(levelname)-10s in %(filename)-20s--> %(message)s', handlers=[logging.FileHandler("tde_log.txt", mode='w')])
-
-from chemtabextract.table.table import Table, TrivialTable
-
+from chemtabextract.exceptions import TDEError, InputError, MIPSError  # noqa: E402
+from chemtabextract.table.table import Table, TrivialTable  # noqa: E402
