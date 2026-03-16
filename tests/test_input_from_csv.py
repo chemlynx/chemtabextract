@@ -11,7 +11,7 @@ import unittest
 import logging
 import os
 
-from tabledataextractor import Table
+from chemtabextract import Table
 
 log = logging.getLogger(__name__)
 

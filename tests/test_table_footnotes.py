@@ -8,7 +8,7 @@ Juraj Mavračić (jm2111@cam.ac.uk)
 import unittest
 import logging
 
-from tabledataextractor import Table
+from chemtabextract import Table
 import numpy as np
 
 log = logging.getLogger(__name__)

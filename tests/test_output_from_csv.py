@@ -11,8 +11,8 @@ import unittest
 import logging
 import os
 
-from tabledataextractor import Table
-from tabledataextractor.output.to_csv import write_to_csv
+from chemtabextract import Table
+from chemtabextract.output.to_csv import write_to_csv
 
 
 log = logging.getLogger(__name__)

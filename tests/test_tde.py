@@ -8,7 +8,7 @@ Tests full tables - default config - only correct outcomes
 
 import unittest
 import logging
-from tabledataextractor import Table
+from chemtabextract import Table
 
 log = logging.getLogger(__name__)
 

@@ -10,10 +10,10 @@ Juraj Mavračić (jm2111@cam.ac.uk)
 import unittest
 import logging
 
-from tabledataextractor import Table
-from tabledataextractor.input import from_csv
-from tabledataextractor.output.print import print_table
-from tabledataextractor.table.algorithms import find_cc4, find_cc1_cc2
+from chemtabextract import Table
+from chemtabextract.input import from_csv
+from chemtabextract.output.print import print_table
+from chemtabextract.table.algorithms import find_cc4, find_cc1_cc2
 import numpy as np
 import os
 
