@@ -1,14 +1,12 @@
-# -*- coding: utf-8 -*-
 """
 Analyzes the input and calls the appropriate input module.
 """
 
-from urllib.parse import urlparse
-import os.path
-from chemtabextract.input import from_html
-from chemtabextract.input import from_csv
-from chemtabextract.input import from_list
 import logging
+import os.path
+from urllib.parse import urlparse
+
+from chemtabextract.input import from_csv, from_html, from_list
 
 log = logging.getLogger(__name__)
 
@@ -76,26 +74,26 @@ def create_table(name_key, table_number=1):
         if len(name_key) > 0:
             return from_list.read(name_key)
         else:
-            msg = 'Input is invalid. ' \
-                  'Supported are: path to .html or .cvs file, URL or multidimensional python list object'
+            msg = (
+                "Input is invalid. "
+                "Supported are: path to .html or .cvs file, URL or multidimensional python list object"
+            )
             log.critical(msg)
             raise TypeError(msg, str(name_key))
 
     elif url(name_key):
-        log.info("Url: {}".format(name_key))
+        log.info(f"Url: {name_key}")
         return from_html.read_url(name_key, table_number)
 
     elif html(name_key):
-        log.info("HTML File: {}".format(name_key))
+        log.info(f"HTML File: {name_key}")
         return from_html.read_file(name_key, table_number)
 
     elif csv(name_key):
-        log.info("CSV File: {}".format(name_key))
+        log.info(f"CSV File: {name_key}")
         return from_csv.read(name_key)
 
     else:
-        msg = 'Input is invalid. Supported are: path to .html or .cvs file, URL or multidimensional python list object'
+        msg = "Input is invalid. Supported are: path to .html or .cvs file, URL or multidimensional python list object"
         log.critical(msg)
         raise TypeError(msg, str(name_key))
-
-

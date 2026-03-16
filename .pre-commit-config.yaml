@@ -1,0 +1,60 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: check-yaml
+      - id: check-toml
+      - id: end-of-file-fixer
+      - id: trailing-whitespace
+
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.9.0
+    hooks:
+      - id: ruff
+        args: [--fix]
+      - id: ruff-format
+
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.14.1
+    hooks:
+      - id: mypy
+        args: [--ignore-missing-imports, --no-strict-optional]
+        exclude: ^docs/|^examples/
+        additional_dependencies:
+          - types-requests>=2.31.0
+
+  - repo: https://github.com/PyCQA/bandit
+    rev: 1.8.3
+    hooks:
+      - id: bandit
+        args: [-c, pyproject.toml]
+        additional_dependencies: ["bandit[toml]"]
+
+  - repo: https://github.com/jendrikseipp/vulture
+    rev: v2.14
+    hooks:
+      - id: vulture
+        # --min-confidence 70: skips 60%-confidence heuristics that vulture
+        # cannot statically verify (runtime attributes, public API accessed
+        # by downstream consumers). All 90%+ findings are whitelisted or fixed.
+        args: [--min-confidence, "70", src/chemtabextract, whitelist.py]
+
+  - repo: local
+    hooks:
+      - id: xenon
+        name: xenon complexity check
+        language: system
+        entry: uv run xenon
+        # --max-absolute E: MIPS algorithm (find_cc1_cc2) has inherent rank-E
+        # complexity; this is frozen legacy code and must not be refactored.
+        args: [--max-absolute, E, src/chemtabextract]
+        pass_filenames: false
+        types: [python]
+
+      - id: pytest-cov
+        name: pytest with coverage
+        language: system
+        entry: uv run pytest
+        args: [--cov=chemtabextract, --cov-fail-under=40, -q]
+        pass_filenames: false
+        stages: [pre-push]

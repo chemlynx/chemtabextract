@@ -22,6 +22,3 @@ Convert to Pandas DataFrame
 
 .. automodule:: tabledataextractor.output.to_pandas
     :members:
-
-
-

@@ -10,8 +10,7 @@ import logging
 
 def test_top_level_imports() -> None:
     """All five public symbols are importable from chemtabextract directly."""
-    from chemtabextract import Table, TrivialTable
-    from chemtabextract import TDEError, InputError, MIPSError
+    from chemtabextract import InputError, MIPSError, Table, TDEError, TrivialTable
 
     assert Table is not None
     assert TrivialTable is not None
@@ -22,7 +21,7 @@ def test_top_level_imports() -> None:
 
 def test_exception_importable_from_submodule() -> None:
     """Exceptions remain importable from chemtabextract.exceptions."""
-    from chemtabextract.exceptions import TDEError, InputError, MIPSError
+    from chemtabextract.exceptions import InputError, MIPSError, TDEError
 
     assert issubclass(InputError, TDEError)
     assert issubclass(MIPSError, TDEError)
@@ -30,7 +29,6 @@ def test_exception_importable_from_submodule() -> None:
 
 def test_nullhandler_installed() -> None:
     """chemtabextract installs a NullHandler and does not configure root logging."""
-    import chemtabextract
 
     pkg_logger = logging.getLogger("chemtabextract")
     handler_types = [type(h) for h in pkg_logger.handlers]

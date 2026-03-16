@@ -1,14 +1,20 @@
-# -*- coding: utf-8 -*-
 """
 Header, structure, and spanning-cell helpers for chemtabextract.
 Internal sub-module — do not import directly from outside algorithms/.
 """
 
 import logging
+
 import numpy as np
+
 from chemtabextract.exceptions import MIPSError
-from chemtabextract.table.algorithms._utils import empty_cells, empty_string, duplicate_rows, duplicate_columns
-from chemtabextract.table.algorithms._mips import find_cc4, find_cc1_cc2
+from chemtabextract.table.algorithms._mips import find_cc1_cc2, find_cc4
+from chemtabextract.table.algorithms._utils import (
+    duplicate_columns,
+    duplicate_rows,
+    empty_cells,
+    empty_string,
+)
 
 log = logging.getLogger(__name__)
 
@@ -38,7 +44,7 @@ def find_note_cells(table_object, labels_table):
     """
     for row_index, row in enumerate(labels_table):
         for column_index, cell in enumerate(row):
-            if cell == '/' and not table_object.pre_cleaned_table_empty[row_index, column_index]:
+            if cell == "/" and not table_object.pre_cleaned_table_empty[row_index, column_index]:
                 yield row_index, column_index
 
 
@@ -111,7 +117,7 @@ def prefix_duplicate_labels(table_object, array):
         for row_index, row in enumerate(table):
             duplicated_row = []
             new_row = []
-            for cell_index, cell in enumerate(row):
+            for _, cell in enumerate(row):
                 # append if unique or empty cell
                 if unique(cell, row) or empty_string(cell):
                     duplicated_row.append(cell)
@@ -162,8 +168,8 @@ def prefix_duplicate_labels(table_object, array):
         # only perform prefixing if not below of header region (above is allowed!)
         # to allow prefixing even below the old header region cannot be right
         if row_index <= cc2[0]:
-            log.debug("Column header prefixing, row_index= {}".format(row_index))
-            log.debug("Prefixed row= {}".format(new_row))
+            log.debug(f"Column header prefixing, row_index= {row_index}")
+            log.debug(f"Prefixed row= {new_row}")
             # Prefixing by adding new row:
             prefixed = True
             prefixed_table = np.insert(array, row_index, new_row, axis=0)
@@ -174,8 +180,8 @@ def prefix_duplicate_labels(table_object, array):
         # only perform prefixing if not to the right of header region (to the left is allowed!)
         # to allow prefixing even below the old header region cannot be right
         if column_index <= cc2[1]:
-            log.debug("Row header prefixing, column_index= {}".format(column_index))
-            log.debug("Prefixed column= {}".format(new_column))
+            log.debug(f"Row header prefixing, column_index= {column_index}")
+            log.debug(f"Prefixed column= {new_column}")
             # Prefixing by adding a new column:
             prefixed = True
             prefixed_table = np.insert(array, column_index, new_column, axis=1)
@@ -237,7 +243,9 @@ def duplicate_spanning_cells(table_object, array):
     # running MIPS to find the data region
     log.debug("Spanning cells. Attempt to run MIPS algorithm, to find potential title row.")
     try:
-        cc1, cc2 = find_cc1_cc2(table_object, find_cc4(table_object), table_object.pre_cleaned_table)
+        cc1, cc2 = find_cc1_cc2(
+            table_object, find_cc4(table_object), table_object.pre_cleaned_table
+        )
     except (MIPSError, TypeError):
         log.error("Spanning cells update was not performed due to failure of MIPS algorithm.")
         return array
@@ -260,7 +268,9 @@ def duplicate_spanning_cells(table_object, array):
         flag = 0
         for c in range(len(temp.T)):
             if temp[r, c]:
-                if (len(temp) - 1 > r and temp[r + 1, c] != temp[r, c]) or temp[r - 1, c] != temp[r, c]:
+                if (len(temp) - 1 > r and temp[r + 1, c] != temp[r, c]) or temp[r - 1, c] != temp[
+                    r, c
+                ]:
                     left_fill = temp[r, c]
                     flag = 1
                 else:
@@ -275,7 +285,7 @@ def duplicate_spanning_cells(table_object, array):
     temp2 = np.copy(temp)
     diff_row_length = 0
     diff_col_length = 0
-    if table_object.configs['use_prefixing']:
+    if table_object.configs["use_prefixing"]:
         temp2 = prefix_duplicate_labels(table_object, temp)
         # reset the prefixing flag
         table_object.history._prefixing_performed = False
@@ -284,15 +294,15 @@ def duplicate_spanning_cells(table_object, array):
         diff_col_length = len(temp2.T) - len(temp.T)
     log.debug("Spanning cells. Attempt to run main MIPS algorithm.")
     # disable title row temporarily
-    old_title_row_setting = table_object.configs['use_title_row']
-    table_object.configs['use_title_row'] = False
+    old_title_row_setting = table_object.configs["use_title_row"]
+    table_object.configs["use_title_row"] = False
     try:
         cc1, cc2 = find_cc1_cc2(table_object, find_cc4(table_object), temp2)
     except (MIPSError, TypeError):
         log.error("Spanning cells update was not performed due to failure of MIPS algorithm.")
         return array
     finally:
-        table_object.configs['use_title_row'] = old_title_row_setting
+        table_object.configs["use_title_row"] = old_title_row_setting
 
     updated = array.copy()
     # update the original table with values from the updated table if the cells are in the header regions
@@ -331,17 +341,19 @@ def header_extension_up(table_object, cc1):
     # add row above the identified column header if it does not consist of cells with identical values and if it
     # adds at least one non-blank cell that has a value different from the cell immediately below it
     current_row = table_object.pre_cleaned_table[cc1[0], :]
-    for row_index in range(cc1[0]-1, -1, -1):
+    for row_index in range(cc1[0] - 1, -1, -1):
         # start after the first column to allow for a title
         if len(np.unique(table_object.pre_cleaned_table[row_index, 1:])) == 1:
-            cc1_new_row = row_index+1
+            cc1_new_row = row_index + 1
         else:
             for col_index, cell in enumerate(table_object.pre_cleaned_table[row_index, :]):
                 # remove the first row from this check to preserve a title,
                 # if the title is the only non-empty element of the row
-                if col_index != 0 and \
-                        cell != current_row[col_index] and \
-                        not table_object.pre_cleaned_table_empty[row_index, col_index]:
+                if (
+                    col_index != 0
+                    and cell != current_row[col_index]
+                    and not table_object.pre_cleaned_table_empty[row_index, col_index]
+                ):
                     current_row = table_object.pre_cleaned_table[row_index, :]
                     cc1_new_row = row_index
                     break
@@ -350,12 +362,15 @@ def header_extension_up(table_object, cc1):
 
     # now do the same for the row headers
     current_col = table_object.pre_cleaned_table[:, cc1[1]]
-    for col_index in range(cc1[1]-1, -1, -1):
+    for col_index in range(cc1[1] - 1, -1, -1):
         if len(np.unique(table_object.pre_cleaned_table[:, col_index])) == 1:
-            cc1_new_col = col_index+1
+            cc1_new_col = col_index + 1
         else:
             for row_index, cell in enumerate(table_object.pre_cleaned_table[:, col_index]):
-                if cell != current_col[row_index] and not table_object.pre_cleaned_table_empty[row_index, col_index]:
+                if (
+                    cell != current_col[row_index]
+                    and not table_object.pre_cleaned_table_empty[row_index, col_index]
+                ):
                     current_col = table_object.pre_cleaned_table[:, col_index]
                     cc1_new_col = col_index
                     break
@@ -393,11 +408,12 @@ def header_extension_down(table_object, cc1, cc2, cc4):
 
     # only do downwards header extension if no prefixing was done
     if not table_object.history.prefixing_performed:
-
         # extend column header downwards, changes cc2 row
         # only the first cell of the stub header has to be empty to accept the move downwards
         row_index = cc2[0]
-        while row_index <= cc4[0] and empty_string(table_object.pre_cleaned_table[row_index, cc1[1]]):
+        while row_index <= cc4[0] and empty_string(
+            table_object.pre_cleaned_table[row_index, cc1[1]]
+        ):
             row_index += 1
             cc2_new = (row_index - 1, cc2_new[1])
             if cc2_new != cc2:
@@ -420,7 +436,10 @@ def header_extension_down(table_object, cc1, cc2, cc4):
         # extend row header to the right, changes cc2 col
         # this check is more rigorous than above, and all the cells in the stub header have to be empty
         col_index = cc2_new[1]
-        while col_index <= cc4[1] and empty_cells(table_object.pre_cleaned_table[cc1[0]:cc2[0]+1, col_index]).all():
+        while (
+            col_index <= cc4[1]
+            and empty_cells(table_object.pre_cleaned_table[cc1[0] : cc2[0] + 1, col_index]).all()
+        ):
             col_index += 1
             if col_index - 1 != cc2_new[1]:
                 extended = True
@@ -440,4 +459,3 @@ def header_extension_down(table_object, cc1, cc2, cc4):
             table_object.history._header_extended_down = True
 
     return cc2_new
-

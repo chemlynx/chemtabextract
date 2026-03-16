@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 chemtabextract.tests.test_input_from_csv.py
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

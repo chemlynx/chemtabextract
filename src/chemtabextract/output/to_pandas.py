@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Outputs the table to a Pandas DataFrame.
 """
@@ -26,21 +25,21 @@ def find_multiindex_level(row_number, column_number, df):
     Finds the `Pandas` `MultiIndex level` in a given `Pandas` `DataFrame`, for a particular data value.
     """
     result_index = []
-    if hasattr(df.index, 'codes'):
+    if hasattr(df.index, "codes"):
         for i, codes in enumerate(df.index.codes):
             result_index.append(df.index.levels[i][codes[row_number]])
     # Backwards compatibility
-    elif hasattr(df.index, 'labels'):
+    elif hasattr(df.index, "labels"):
         for i, labels in enumerate(df.index.labels):
             result_index.append(df.index.levels[i][labels[row_number]])
     else:
         result_index.append(df.index[row_number])
     result_column = []
-    if hasattr(df.columns, 'codes'):
+    if hasattr(df.columns, "codes"):
         for i, codes in enumerate(df.columns.codes):
             result_column.append(df.columns.levels[i][codes[column_number]])
     # Backwards compatibility
-    elif hasattr(df.columns, 'labels'):
+    elif hasattr(df.columns, "labels"):
         for i, labels in enumerate(df.columns.labels):
             result_column.append(df.columns.levels[i][labels[column_number]])
     else:
@@ -56,11 +55,19 @@ def print_category_table(df):
     :type df: pandas.DataFrame
     """
     values = df.values  # data is converted to numpy array
-    print("{:11s} {:10s} {:36s} {:20s}".format("Cell_ID", "Data", "Row Categories", "Column Categories"))
+    print(
+        "{:11s} {:10s} {:36s} {:20s}".format(
+            "Cell_ID", "Data", "Row Categories", "Column Categories"
+        )
+    )
     for i, row in enumerate(values):
         for j, cell in enumerate(row):
             categories = find_multiindex_level(i, j, df)
-            print("{:3} {:3} {:15}   {:35}  {:40}".format(i, j, str(cell), ''.join(str(categories[0])), ''.join(str(categories[1]))))
+            print(
+                "{:3} {:3} {:15}   {:35}  {:40}".format(
+                    i, j, str(cell), "".join(str(categories[0])), "".join(str(categories[1]))
+                )
+            )
 
 
 def build_category_table(df):

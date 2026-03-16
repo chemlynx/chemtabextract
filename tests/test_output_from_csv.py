@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 chemtabextract.tests.test_output_from_csv.py
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -20,12 +19,12 @@ def _do_conversion(filename: str) -> None:
     in_path = os.path.join(os.path.dirname(__file__), "data", filename)
     out_path = os.path.join(os.path.dirname(__file__), "data", "temp_" + filename)
 
-    with open(in_path, "r", encoding="utf-8") as f:
+    with open(in_path, encoding="utf-8") as f:
         in_string = f.read()
     table = Table(in_path)
 
     write_to_csv(table.raw_table, out_path)
-    with open(in_path, "r", encoding="utf-8") as f:
+    with open(in_path, encoding="utf-8") as f:
         out_string = f.read()
     os.remove(out_path)
 

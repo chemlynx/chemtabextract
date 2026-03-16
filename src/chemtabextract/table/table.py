@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Represents a table in a highly standardized format.
 
@@ -7,19 +6,34 @@ Represents a table in a highly standardized format.
 """
 
 import logging
+
 import numpy as np
 
-from chemtabextract.input import from_any
-from chemtabextract.output.print import as_string, print_table, list_as_PrettyTable
-from chemtabextract.output.to_csv import write_to_csv
-from chemtabextract.output.to_pandas import to_pandas, build_category_table
-from chemtabextract.table.parse import StringParser
 from chemtabextract.exceptions import InputError, MIPSError, TDEError
-from chemtabextract.table.history import History
-from chemtabextract.table.algorithms import find_cc1_cc2, find_cc3, find_cc4, prefix_duplicate_labels, \
-    duplicate_spanning_cells, header_extension_up, find_title_row, find_note_cells, empty_cells, \
-    pre_clean, split_table, standardize_empty, header_extension_down, find_row_header_table, clean_row_header
+from chemtabextract.input import from_any
+from chemtabextract.output.print import as_string, list_as_PrettyTable, print_table
+from chemtabextract.output.to_csv import write_to_csv
+from chemtabextract.output.to_pandas import build_category_table, to_pandas
+from chemtabextract.table.algorithms import (
+    clean_row_header,
+    duplicate_spanning_cells,
+    empty_cells,
+    find_cc1_cc2,
+    find_cc3,
+    find_cc4,
+    find_note_cells,
+    find_row_header_table,
+    find_title_row,
+    header_extension_down,
+    header_extension_up,
+    pre_clean,
+    prefix_duplicate_labels,
+    split_table,
+    standardize_empty,
+)
 from chemtabextract.table.footnotes import find_footnotes
+from chemtabextract.table.history import History
+from chemtabextract.table.parse import StringParser
 
 log = logging.getLogger(__name__)
 
@@ -62,7 +76,7 @@ class Table:
 
     def __init__(self, file_path, table_number=1, **kwargs):
         """Runs required `TableDataExtractor` algorithms automatically upon initialization."""
-        log.info('Initialization of table: "{}"'.format(file_path))
+        log.info(f'Initialization of table: "{file_path}"')
         self._file_path = file_path
         self._table_number = table_number
         self._configs = self._set_configs(**kwargs)
@@ -71,15 +85,17 @@ class Table:
 
     @property
     def _default_configs(self):
-        return {'use_title_row': True,
-                'use_prefixing': True,
-                'use_footnotes': True,
-                'use_spanning_cells': True,
-                'use_header_extension': True,
-                'use_max_data_area': False,
-                'standardize_empty_data': True,
-                'row_header': None,
-                'col_header': None}
+        return {
+            "use_title_row": True,
+            "use_prefixing": True,
+            "use_footnotes": True,
+            "use_spanning_cells": True,
+            "use_header_extension": True,
+            "use_max_data_area": False,
+            "standardize_empty_data": True,
+            "row_header": None,
+            "col_header": None,
+        }
 
     def _analyze_table(self):
         """
@@ -87,26 +103,27 @@ class Table:
         """
         # check if input array is empty
         if empty_cells(self.raw_table).all():
-            msg = 'Input table is empty.'
+            msg = "Input table is empty."
             log.critical(msg)
             raise InputError(msg)
 
         # clean-up the input array
         self._pre_cleaned_table = pre_clean(self.raw_table)
-        log.debug("Table shape changed from {} to {}.".format(np.shape(self.raw_table),
-                                                             np.shape(self.pre_cleaned_table)))
+        log.debug(
+            f"Table shape changed from {np.shape(self.raw_table)} to {np.shape(self.pre_cleaned_table)}."
+        )
 
-        if self.configs['use_spanning_cells']:
+        if self.configs["use_spanning_cells"]:
             self._pre_cleaned_table = duplicate_spanning_cells(self, self._pre_cleaned_table)
 
-        if self.configs['use_prefixing']:
+        if self.configs["use_prefixing"]:
             self._pre_cleaned_table = prefix_duplicate_labels(self, self._pre_cleaned_table)
 
         # footnotes handling
         self._footnotes = []
         for footnote in find_footnotes(self):
             self._footnotes.append(footnote)
-            if self.configs['use_footnotes']:
+            if self.configs["use_footnotes"]:
                 self._copy_footnotes(footnote)
 
         # Main MIPS algorithm, finding the data and header regions
@@ -118,12 +135,12 @@ class Table:
             log.critical(msg)
             raise MIPSError(msg)
         else:
-            log.debug("Table Cell CC1 = {}; Table Cell CC2 = {}".format(self._cc1, self._cc2))
+            log.debug(f"Table Cell CC1 = {self._cc1}; Table Cell CC2 = {self._cc2}")
 
-        if self.configs['use_header_extension']:
+        if self.configs["use_header_extension"]:
             self._cc1 = header_extension_up(self, self._cc1)
             self._cc2 = header_extension_down(self, self._cc1, self._cc2, self._cc4)
-            log.debug("Header extension, new cc1 = {}, new cc2 = {}".format(self._cc1, self._cc2))
+            log.debug(f"Header extension, new cc1 = {self._cc1}, new cc2 = {self._cc2}")
 
         # check if critical cell `CC3` can be found
         try:
@@ -148,7 +165,7 @@ class Table:
 
         :type: list
         """
-        if self._configs['use_title_row']:
+        if self._configs["use_title_row"]:
             return find_title_row(self)
 
     @property
@@ -168,28 +185,34 @@ class Table:
         :type: list
         """
         temp = np.empty_like(self._pre_cleaned_table, dtype="<U60")
-        temp[:, :] = '/'
+        temp[:, :] = "/"
 
-        if self.configs['use_title_row']:
-            temp[self.title_row, :] = 'TableTitle'
+        if self.configs["use_title_row"]:
+            temp[self.title_row, :] = "TableTitle"
 
-        temp[self._cc1[0]:self._cc2[0] + 1, self._cc1[1]:self._cc2[1] + 1] = 'StubHeader'
-        temp[self._cc3[0]:self._cc4[0] + 1, self._cc1[1]:self._cc2[1] + 1] = 'RowHeader'
-        temp[self._cc1[0]:self._cc2[0] + 1, self._cc3[1]:self._cc4[1] + 1] = 'ColHeader'
-        temp[self._cc3[0]:self._cc4[0] + 1, self._cc3[1]:self._cc4[1] + 1] = 'Data'
+        temp[self._cc1[0] : self._cc2[0] + 1, self._cc1[1] : self._cc2[1] + 1] = "StubHeader"
+        temp[self._cc3[0] : self._cc4[0] + 1, self._cc1[1] : self._cc2[1] + 1] = "RowHeader"
+        temp[self._cc1[0] : self._cc2[0] + 1, self._cc3[1] : self._cc4[1] + 1] = "ColHeader"
+        temp[self._cc3[0] : self._cc4[0] + 1, self._cc3[1] : self._cc4[1] + 1] = "Data"
 
         for footnote in self.footnotes:
-            temp[footnote.prefix_cell[0], footnote.prefix_cell[1]] = 'FNprefix'
+            temp[footnote.prefix_cell[0], footnote.prefix_cell[1]] = "FNprefix"
             if footnote.text_cell is not None:
-                temp[footnote.text_cell[0], footnote.text_cell[1]] = 'FNtext' if \
-                    temp[footnote.text_cell[0], footnote.text_cell[1]] == '/' else 'FNprefix & FNtext'
+                temp[footnote.text_cell[0], footnote.text_cell[1]] = (
+                    "FNtext"
+                    if temp[footnote.text_cell[0], footnote.text_cell[1]] == "/"
+                    else "FNprefix & FNtext"
+                )
             for ref_cell in footnote.reference_cells:
-                temp[ref_cell[0], ref_cell[1]] = 'FNref' if temp[ref_cell[0], ref_cell[1]] == '/' else \
-                    temp[ref_cell[0], ref_cell[1]] + ' & FNref'
+                temp[ref_cell[0], ref_cell[1]] = (
+                    "FNref"
+                    if temp[ref_cell[0], ref_cell[1]] == "/"
+                    else temp[ref_cell[0], ref_cell[1]] + " & FNref"
+                )
 
         # all non-empty unlabelled cells at this point are labelled 'Note'
         for note_cell in find_note_cells(self, temp):
-            temp[note_cell] = 'Note'
+            temp[note_cell] = "Note"
         return temp
 
     @property
@@ -213,9 +236,9 @@ class Table:
         except TypeError:
             raise
         else:
-            assert isinstance(temp, np.ndarray) and temp.dtype == '<U60'
+            assert isinstance(temp, np.ndarray) and temp.dtype == "<U60"
             if temp.ndim == 1:
-                msg = 'Input table has only one row or column.'
+                msg = "Input table has only one row or column."
                 log.critical(msg)
                 raise InputError(msg)
             if not self.history.table_transposed:
@@ -264,7 +287,9 @@ class Table:
         :type: numpy.ndarray
         """
         if self._cc1 and self._cc2 and self._cc3 and self._cc4:
-            return self._pre_cleaned_table[self._cc1[0]:self._cc2[0] + 1, self._cc3[1]:self._cc4[1] + 1]
+            return self._pre_cleaned_table[
+                self._cc1[0] : self._cc2[0] + 1, self._cc3[1] : self._cc4[1] + 1
+            ]
         else:
             msg = "No column header. Critical cells have not been found."
             raise MIPSError(msg)
@@ -277,7 +302,9 @@ class Table:
         :type: numpy.ndarray
         """
         if self._cc1 and self._cc2 and self._cc3 and self._cc4:
-            return self._pre_cleaned_table[self._cc3[0]:self._cc4[0] + 1, self._cc1[1]:self._cc2[1] + 1]
+            return self._pre_cleaned_table[
+                self._cc3[0] : self._cc4[0] + 1, self._cc1[1] : self._cc2[1] + 1
+            ]
         else:
             msg = "No row header. Critical cells have not been found."
             raise MIPSError(msg)
@@ -290,7 +317,9 @@ class Table:
         :type: numpy.ndarray
         """
         if self._cc1 and self._cc2 and self._cc3 and self._cc4:
-            return self._pre_cleaned_table[self._cc1[0]:self._cc2[0] + 1, self._cc1[1]:self._cc2[1] + 1]
+            return self._pre_cleaned_table[
+                self._cc1[0] : self._cc2[0] + 1, self._cc1[1] : self._cc2[1] + 1
+            ]
         else:
             msg = "No stub header. Critical cells have not been found."
             raise MIPSError(msg)
@@ -303,8 +332,10 @@ class Table:
         :type: numpy.ndarray
         """
         if self._cc1 and self._cc2 and self._cc3 and self._cc4:
-            data_region = self._pre_cleaned_table[self._cc3[0]:self._cc4[0] + 1, self._cc3[1]:self._cc4[1] + 1]
-            if self.configs['standardize_empty_data']:
+            data_region = self._pre_cleaned_table[
+                self._cc3[0] : self._cc4[0] + 1, self._cc3[1] : self._cc4[1] + 1
+            ]
+            if self.configs["standardize_empty_data"]:
                 data_region = standardize_empty(data_region)
             return data_region
         else:
@@ -322,15 +353,15 @@ class Table:
         tables = []
         g = split_table(self)
         while True:
-                subtable = next(g, None)
-                if subtable is None:
+            subtable = next(g, None)
+            if subtable is None:
+                break
+            else:
+                try:
+                    tables.append(Table(subtable))
+                except MIPSError as e:
+                    log.exception(f"Subtable MIPS failure {e.args}")
                     break
-                else:
-                    try:
-                        tables.append(Table(subtable))
-                    except MIPSError as e:
-                        log.exception("Subtable MIPS failure {}".format(e.args))
-                        break
         return tables
 
     @property
@@ -345,12 +376,18 @@ class Table:
         """
         # this outer try statement is necessary to catch some weird errors with empty category tables
         try:
-            if len(self.stub_header.T) != 0 and len(self.stub_header.T) == len(self.category_table[0][1]):
+            if len(self.stub_header.T) != 0 and len(self.stub_header.T) == len(
+                self.category_table[0][1]
+            ):
                 raw_table = find_row_header_table(self.category_table, self.stub_header)
                 try:
-                    table = TrivialTable(raw_table, clean_row_header=True, row_header=0,
-                                         col_header=len(self.stub_header) - 1)
-                except TDEError as e:
+                    table = TrivialTable(
+                        raw_table,
+                        clean_row_header=True,
+                        row_header=0,
+                        col_header=len(self.stub_header) - 1,
+                    )
+                except TDEError:
                     return None
                 if not empty_cells(table.data).any():
                     return table
@@ -368,10 +405,10 @@ class Table:
         """
         parser = StringParser(pattern)
         for row in self.category_table:
-            string = row[0] + ' '
-            string += ' '.join(row[1]) + ' '
-            string += ' '.join(row[2])
-            if parser.parse(string, method='search'):
+            string = row[0] + " "
+            string += " ".join(row[1]) + " "
+            string += " ".join(row[2])
+            if parser.parse(string, method="search"):
                 return True
         return False
 
@@ -402,10 +439,10 @@ class Table:
             if key in self._default_configs:
                 configs[key] = value
             else:
-                msg = 'Keyword "{}" does not exist.'.format(key)
+                msg = f'Keyword "{key}" does not exist.'
                 log.critical(msg)
                 raise InputError(msg)
-        log.info('Configuration parameters are: {}'.format(configs))
+        log.info(f"Configuration parameters are: {configs}")
         return configs
 
     def _copy_footnotes(self, footnote):
@@ -422,7 +459,7 @@ class Table:
         Prints the `raw table` (input), `cleaned table` (processed by `TableDataExtractor`) and `labels`
         (regions of the table) nicely.
         """
-        log.debug("Printing table: {}".format(self._file_path))
+        log.debug(f"Printing table: {self._file_path}")
         print_table(self.raw_table)
         print_table(self._pre_cleaned_table)
         print_table(self.labels)
@@ -433,7 +470,7 @@ class Table:
 
     def to_csv(self, file_path):
         """Saves the `raw_table` to a `.csv` file."""
-        log.info("Saving raw table to .csv to file: {}".format(self._file_path))
+        log.info(f"Saving raw table to .csv to file: {self._file_path}")
         write_to_csv(self.raw_table, file_path=file_path)
 
     def to_pandas(self):
@@ -443,24 +480,26 @@ class Table:
 
         :return: pandas.DataFrame
         """
-        log.info("Converting table to Pandas DataFrame: {}".format(self._file_path))
+        log.info(f"Converting table to Pandas DataFrame: {self._file_path}")
         return to_pandas(self)
 
     def __str__(self):
         """As the user wants to see it"""
-        log.debug("Printing table: {}".format(self._file_path))
+        log.debug(f"Printing table: {self._file_path}")
         t = list_as_PrettyTable(self.category_table)
         return str(t)
 
     def __repr__(self):
         """As the developer wants to see it"""
-        intro = "Table({}, table_number={}, transposed={})".format(self._file_path, self._table_number,
-                                                                   self.history.table_transposed)
-        log.debug("Repr. table: {}".format(self._file_path))
+        intro = f"Table({self._file_path}, table_number={self._table_number}, transposed={self.history.table_transposed})"
+        log.debug(f"Repr. table: {self._file_path}")
         array_width = np.shape(self._pre_cleaned_table)[1]
         input_string = as_string(self.raw_table)
         results_string = as_string(
-            np.concatenate((self._pre_cleaned_table, np.full((1, array_width), "", dtype='<U60'), self.labels)))
+            np.concatenate(
+                (self._pre_cleaned_table, np.full((1, array_width), "", dtype="<U60"), self.labels)
+            )
+        )
         t = list_as_PrettyTable(self.category_table)
         return intro + "\n\n" + input_string + results_string + str(t)
 
@@ -483,12 +522,18 @@ class TrivialTable(Table):
 
 
     """
+
     def __init__(self, file_path, table_number=1, **kwargs):
         super().__init__(file_path=file_path, table_number=table_number, **kwargs)
 
     @property
     def _default_configs(self):
-        return {'standardize_empty_data': False, 'clean_row_header': False, 'row_header': 0, 'col_header': 0}
+        return {
+            "standardize_empty_data": False,
+            "clean_row_header": False,
+            "row_header": 0,
+            "col_header": 0,
+        }
 
     def _analyze_table(self):
         """
@@ -496,32 +541,32 @@ class TrivialTable(Table):
         """
         # check if input array is empty
         if empty_cells(self.raw_table).all():
-            msg = 'Input table is empty.'
+            msg = "Input table is empty."
             log.critical(msg)
             raise InputError(msg)
 
         # define critical cells cc1 and cc2 (no MIPS algorithm is used in TrivialTable)
-        self._cc1, self._cc2 = (0, 0), (self.configs['col_header'], self.configs['row_header'])
-        log.debug("Table Cell CC1 = {}; Table Cell CC2 = {}".format(self._cc1, self._cc2))
+        self._cc1, self._cc2 = (0, 0), (self.configs["col_header"], self.configs["row_header"])
+        log.debug(f"Table Cell CC1 = {self._cc1}; Table Cell CC2 = {self._cc2}")
 
         self._pre_cleaned_table = self.raw_table
-        if self.configs['clean_row_header']:
+        if self.configs["clean_row_header"]:
             self._pre_cleaned_table = clean_row_header(self.pre_cleaned_table, self._cc2)
 
     @property
     def _cc4(self):
         """Critical cell `CC4`."""
-        return len(self.pre_cleaned_table)-1, len(self.pre_cleaned_table.T)-1
+        return len(self.pre_cleaned_table) - 1, len(self.pre_cleaned_table.T) - 1
 
     @property
     def _cc3(self):
         """Critical cell `CC3`."""
         if len(self.pre_cleaned_table.T) == 1:
-            return self._cc2[0]+1, self._cc2[1]
+            return self._cc2[0] + 1, self._cc2[1]
         elif len(self.pre_cleaned_table) == 1:
-            return self._cc2[0], self._cc2[1]+1
+            return self._cc2[0], self._cc2[1] + 1
         else:
-            return self._cc2[0]+1, self._cc2[1]+1
+            return self._cc2[0] + 1, self._cc2[1] + 1
 
     @property
     def labels(self):
@@ -531,11 +576,11 @@ class TrivialTable(Table):
         :type: numpy.array
         """
         temp = np.empty_like(self._pre_cleaned_table, dtype="<U60")
-        temp[:, :] = '/'
-        temp[self._cc1[0]:self._cc2[0] + 1, self._cc1[1]:self._cc2[1] + 1] = 'StubHeader'
-        temp[self._cc3[0]:self._cc4[0] + 1, self._cc1[1]:self._cc2[1] + 1] = 'RowHeader'
-        temp[self._cc1[0]:self._cc2[0] + 1, self._cc3[1]:self._cc4[1] + 1] = 'ColHeader'
-        temp[self._cc3[0]:self._cc4[0] + 1, self._cc3[1]:self._cc4[1] + 1] = 'Data'
+        temp[:, :] = "/"
+        temp[self._cc1[0] : self._cc2[0] + 1, self._cc1[1] : self._cc2[1] + 1] = "StubHeader"
+        temp[self._cc3[0] : self._cc4[0] + 1, self._cc1[1] : self._cc2[1] + 1] = "RowHeader"
+        temp[self._cc1[0] : self._cc2[0] + 1, self._cc3[1] : self._cc4[1] + 1] = "ColHeader"
+        temp[self._cc3[0] : self._cc4[0] + 1, self._cc3[1] : self._cc4[1] + 1] = "Data"
         return temp
 
     @property
@@ -546,10 +591,17 @@ class TrivialTable(Table):
         :type: numpy.ndarray
         """
         if self._critical_cells and self._cc3[0] > self._cc2[0]:
-            return self.pre_cleaned_table[self._cc1[0]:self._cc2[0] + 1, self._cc3[1]:self._cc4[1] + 1]
+            return self.pre_cleaned_table[
+                self._cc1[0] : self._cc2[0] + 1, self._cc3[1] : self._cc4[1] + 1
+            ]
         elif self._critical_cells:
-            return np.full_like(self.pre_cleaned_table[self._cc1[0]:self._cc2[0] + 1, self._cc3[1]:self._cc4[1] + 1],
-                                fill_value='', dtype='<U60')
+            return np.full_like(
+                self.pre_cleaned_table[
+                    self._cc1[0] : self._cc2[0] + 1, self._cc3[1] : self._cc4[1] + 1
+                ],
+                fill_value="",
+                dtype="<U60",
+            )
         else:
             return None
 
@@ -561,10 +613,17 @@ class TrivialTable(Table):
         :type: numpy.ndarray
         """
         if self._critical_cells and self._cc3[1] > self._cc2[1]:
-            return self.pre_cleaned_table[self._cc3[0]:self._cc4[0] + 1, self._cc1[1]:self._cc2[1] + 1]
+            return self.pre_cleaned_table[
+                self._cc3[0] : self._cc4[0] + 1, self._cc1[1] : self._cc2[1] + 1
+            ]
         elif self._critical_cells:
-            return np.full_like(self.pre_cleaned_table[self._cc3[0]:self._cc4[0] + 1, self._cc1[1]:self._cc2[1] + 1],
-                                fill_value='', dtype='<U60')
+            return np.full_like(
+                self.pre_cleaned_table[
+                    self._cc3[0] : self._cc4[0] + 1, self._cc1[1] : self._cc2[1] + 1
+                ],
+                fill_value="",
+                dtype="<U60",
+            )
         else:
             return None
 
@@ -590,6 +649,3 @@ class TrivialTable(Table):
     def subtables(self):
         """None"""
         return None
-
-
-

@@ -1,9 +1,9 @@
-# -*- coding: utf-8 -*-
 """
 Functions for printing to screen in a nice format.
 """
 
 import logging
+
 import numpy as np
 from prettytable import PrettyTable
 
@@ -29,8 +29,8 @@ def print_table(table):
     # print each row
     for row in table:
         for i, cell in enumerate(row):
-            print("{:{cell_width}} ".format(cell, cell_width=cell_width[i]+1), end='', flush=True)
-        print("\n", end='', flush=True)
+            print("{:{cell_width}} ".format(cell, cell_width=cell_width[i] + 1), end="", flush=True)
+        print("\n", end="", flush=True)
     print("\n", flush=True)
 
 
@@ -44,7 +44,7 @@ def as_string(table):
     """
     n_columns = table.shape[1]
     cell_width = np.zeros(n_columns, dtype=int)
-    output = ''
+    output = ""
 
     # find the maximum cell width for each column i
     for i, column in enumerate(table.T):
@@ -55,7 +55,7 @@ def as_string(table):
     # print each row
     for row in table:
         for i, cell in enumerate(row):
-            output += "{:{cell_width}} ".format(cell, cell_width=cell_width[i]+1)
+            output += "{:{cell_width}} ".format(cell, cell_width=cell_width[i] + 1)
         output += "\n"
     output += "\n"
     return output
@@ -74,4 +74,3 @@ def list_as_PrettyTable(table_list):
     for row in table_list:
         t.add_row(row)
     return t
-

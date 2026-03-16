@@ -5,6 +5,3 @@ Exceptions
 
 .. automodule:: tabledataextractor.exceptions
     :members:
-
-
-

@@ -1,14 +1,12 @@
-# -*- coding: utf-8 -*-
 """
 Category table and row-header helpers for chemtabextract.
 Internal sub-module — do not import directly from outside algorithms/.
 """
 
 import logging
+
 import numpy as np
-from sympy import Symbol
-from sympy import factor_list, factor
-from chemtabextract.table.algorithms._utils import empty_string, empty_cells, standardize_empty
+from sympy import Symbol, factor_list
 
 log = logging.getLogger(__name__)
 
@@ -35,8 +33,8 @@ def categorize_header(header):
     # factorization
     # f = factor(expression, deep=True)
     f = factor_list(expression)
-    log.debug("Factorization, initial header: {}".format(expression))
-    log.debug("Factorization, factorized header: {}".format(f))
+    log.debug(f"Factorization, initial header: {expression}")
+    log.debug(f"Factorization, factorized header: {f}")
     return f
 
 
@@ -58,32 +56,48 @@ def split_table(table_object):
     # data region by the main MIPS algorithm
     for col_index, column in enumerate(table_object.col_header[:-1].T):
         # the first match is backwards and forwards looking
-        if i == 0 and column.size > 0 and \
-                table_object.stub_header[:-1].T[0].size > 0 and \
-                np.array_equal(column, table_object.stub_header[:-1].T[0]):
-            yield table_object._pre_cleaned_table[:, 0:col_index + 1].tolist()
+        if (
+            i == 0
+            and column.size > 0
+            and table_object.stub_header[:-1].T[0].size > 0
+            and np.array_equal(column, table_object.stub_header[:-1].T[0])
+        ):
+            yield table_object._pre_cleaned_table[:, 0 : col_index + 1].tolist()
             i += 1
         # every other match is only forwards looking
-        if i > 0 and column.size > 0 and \
-                table_object.stub_header[:-1].T[0].size > 0 and \
-                np.array_equal(column, table_object.stub_header[:-1].T[0]):
-            yield table_object._pre_cleaned_table[:, col_index + 1:col_index + i * col_index + 2].tolist()
+        if (
+            i > 0
+            and column.size > 0
+            and table_object.stub_header[:-1].T[0].size > 0
+            and np.array_equal(column, table_object.stub_header[:-1].T[0])
+        ):
+            yield table_object._pre_cleaned_table[
+                :, col_index + 1 : col_index + i * col_index + 2
+            ].tolist()
             i += 1
 
     # now the same thing for the row header
     i = 0
     for row_index, row in enumerate(table_object.row_header[:, :-1]):
         # the first match is backwards and forwards looking
-        if i == 0 and row.size > 0 and \
-                table_object.stub_header[0, :-1].size > 0 and \
-                np.array_equal(row, table_object.stub_header[0, :-1]):
-            yield table_object._pre_cleaned_table[0:row_index + 1, :].tolist()
+        if (
+            i == 0
+            and row.size > 0
+            and table_object.stub_header[0, :-1].size > 0
+            and np.array_equal(row, table_object.stub_header[0, :-1])
+        ):
+            yield table_object._pre_cleaned_table[0 : row_index + 1, :].tolist()
             i += 1
         # every other match is only forwards looking
-        if i > 0 and row.size > 0 and \
-                table_object.stub_header[0, :-1].size > 0 \
-                and np.array_equal(row, table_object.stub_header[0, :-1]):
-            yield table_object._pre_cleaned_table[row_index + 1:row_index + i * row_index + 2, :].tolist()
+        if (
+            i > 0
+            and row.size > 0
+            and table_object.stub_header[0, :-1].size > 0
+            and np.array_equal(row, table_object.stub_header[0, :-1])
+        ):
+            yield table_object._pre_cleaned_table[
+                row_index + 1 : row_index + i * row_index + 2, :
+            ].tolist()
             i += 1
 
 
@@ -116,8 +130,8 @@ def clean_row_header(pre_cleaned_table, cc2):
     """
     Cleans the row header by removing duplicate rows that span the whole table.
     """
-    unmodified_part = pre_cleaned_table[:cc2[0]+1, :]
-    modified_part = pre_cleaned_table[cc2[0]+1:, :]
+    unmodified_part = pre_cleaned_table[: cc2[0] + 1, :]
+    modified_part = pre_cleaned_table[cc2[0] + 1 :, :]
 
     # delete duplicate rows that extend over the whole table
     _, indices = np.unique(modified_part, axis=0, return_index=True)
@@ -130,4 +144,3 @@ def clean_row_header(pre_cleaned_table, cc2):
     modified_part = modified_part[np.sort(indices)]
 
     return np.vstack((unmodified_part, modified_part))
-
