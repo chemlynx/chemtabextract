@@ -1,11 +1,11 @@
-# -*- coding: utf-8 -*-
 """
 Reads a `csv` formatted table from file. The file has to be 'utf-8' encoded.
 """
 
-import numpy as np
-import logging
 import csv
+import logging
+
+import numpy as np
 
 log = logging.getLogger(__name__)
 
@@ -17,10 +17,9 @@ def read(file_path):
     :return: numpy.ndarray
     """
 
-    with open(file_path, 'r', encoding='utf-8') as f:
+    with open(file_path, encoding="utf-8") as f:
         array = [elem for elem in list(csv.reader(f)) if elem]
         n = len(array[0])
         array = [x for x in array if len(x) == n]  # Only include rows with data for every column
-        array = np.asarray(array, dtype='<U60')
+        array = np.asarray(array, dtype="<U60")
     return array
-

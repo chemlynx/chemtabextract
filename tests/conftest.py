@@ -2,7 +2,7 @@
 
 import pytest
 
-from chemtabextract import Table, TrivialTable
+from chemtabextract import Table
 
 
 @pytest.fixture

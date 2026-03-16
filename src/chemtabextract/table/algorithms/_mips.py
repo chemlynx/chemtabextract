@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 MIPS (Minimum Indexing Point Search) algorithm core.
 *** NO LOGIC CHANGES PERMITTED ***
@@ -6,11 +5,9 @@ Internal sub-module — do not import directly from outside algorithms/.
 """
 
 import logging
-import numpy as np
-from sympy import Symbol
-from sympy import factor_list, factor
+
 from chemtabextract.exceptions import MIPSError
-from chemtabextract.table.algorithms._utils import duplicate_rows, duplicate_columns
+from chemtabextract.table.algorithms._utils import duplicate_columns, duplicate_rows
 
 log = logging.getLogger(__name__)
 
@@ -85,13 +82,15 @@ def find_cc1_cc2(table_object, cc4, array):
         if r2 + 1 == r_max and c1 == c2:
             section_1 = table[r2 + 1, c1]
         elif r2 + 1 == r_max and c1 != c2:
-            section_1 = table[r2 + 1, c1:c2 + 1]
+            section_1 = table[r2 + 1, c1 : c2 + 1]
         elif r2 + 1 != r_max and c1 != c2:
-            section_1 = table[r2 + 1:r_max + 1, c1:c2 + 1]
+            section_1 = table[r2 + 1 : r_max + 1, c1 : c2 + 1]
         elif r2 + 1 != r_max and c1 == c2:
-            section_1 = table[r2 + 1:r_max + 1, c1]
+            section_1 = table[r2 + 1 : r_max + 1, c1]
         else:
-            log.critical("Not defined section_1, r2+1= {}, r_max= {}, c1= {}, c2= {}".format(r2 + 1, r_max, c1, c2))
+            log.critical(
+                f"Not defined section_1, r2+1= {r2 + 1}, r_max= {r_max}, c1= {c1}, c2= {c2}"
+            )
             section_1 = None
 
         # contrary to the published pseudocode the row maximum is r2, not r2-1
@@ -100,14 +99,15 @@ def find_cc1_cc2(table_object, cc4, array):
         if r1 == r2 and c2 + 1 == c_max:
             section_2 = table[r1, c2 + 1]
         elif r1 == r2 and c2 + 1 != c_max:
-            section_2 = table[r1, c2 + 1: c_max + 1]
+            section_2 = table[r1, c2 + 1 : c_max + 1]
         elif r1 != r2 and c2 + 1 != c_max:
-            section_2 = table[r1: r2 + 1, c2 + 1: c_max + 1]
+            section_2 = table[r1 : r2 + 1, c2 + 1 : c_max + 1]
         elif r1 != r2 and c2 + 1 == c_max:
-            section_2 = table[r1: r2 + 1, c2 + 1]
+            section_2 = table[r1 : r2 + 1, c2 + 1]
         else:
             log.critical(
-                "Not defined section_2, r2-1= {}, r1= {}, c2+1= {}, c_max= {}".format(r2 - 1, r1, c2 + 1, c_max))
+                f"Not defined section_2, r2-1= {r2 - 1}, r1= {r1}, c2+1= {c2 + 1}, c_max= {c_max}"
+            )
             section_2 = None
 
         return section_1, section_2
@@ -123,15 +123,15 @@ def find_cc1_cc2(table_object, cc4, array):
         if r1 == r2 and c2 + 1 == c_max:
             section = table[r1, c2 + 1]
         elif r1 == r2 and c2 + 1 != c_max:
-            section = table[r1, c2 + 1:c_max + 1]
+            section = table[r1, c2 + 1 : c_max + 1]
         elif r1 != r2 and c2 + 1 != c_max:
-            section = table[r1: r2 + 1, c2 + 1:c_max + 1]
+            section = table[r1 : r2 + 1, c2 + 1 : c_max + 1]
         elif r1 != r2 and c2 + 1 == c_max:
-            section = table[r1: r2 + 1, c2 + 1]
+            section = table[r1 : r2 + 1, c2 + 1]
         else:
             log.critical(
-                "Not defined section 1 for cc1, r1+1= {}, r2= {}, c2+1= {}, c_max= {}".format(r1 + 1, r2, c2 + 1,
-                                                                                              c_max))
+                f"Not defined section 1 for cc1, r1+1= {r1 + 1}, r2= {r2}, c2+1= {c2 + 1}, c_max= {c_max}"
+            )
             section = None
         return section
 
@@ -146,15 +146,15 @@ def find_cc1_cc2(table_object, cc4, array):
         if r2 + 1 == r_max and c1 == c2:
             section = table[r2 + 1, c1]
         elif r2 + 1 == r_max and c1 != c2:
-            section = table[r2 + 1, c1: c2 + 1]
+            section = table[r2 + 1, c1 : c2 + 1]
         elif r2 + 1 != r_max and c1 != c2:
-            section = table[r2 + 1: r_max + 1, c1: c2 + 1]
+            section = table[r2 + 1 : r_max + 1, c1 : c2 + 1]
         elif r2 + 1 != r_max and c1 == c2:
-            section = table[r2 + 1: r_max + 1, c1]
+            section = table[r2 + 1 : r_max + 1, c1]
         else:
             log.critical(
-                "Not defined section 2 for cc1, r2+1= {}, c2= {}, c1+1= {}, r_max= {}".format(r2 + 1, c2, c1 + 1,
-                                                                                              r_max))
+                f"Not defined section 2 for cc1, r2+1= {r2 + 1}, c2= {c2}, c1+1= {c1 + 1}, r_max= {r_max}"
+            )
             section = None
         return section
 
@@ -164,97 +164,98 @@ def find_cc1_cc2(table_object, cc4, array):
     # The pseudocode clearly does not return cc2 if the column has not been changed and it doesn't
     # discriminate between duplicate rows in the row header vs duplicate columns in the column header
     while c2 < c_max and r2 >= r1:
-
-        log.debug("Entering loop:  r_max= {}, c_max= {}, c1= {}, c2= {}, r1= {}, r2= {}, cc2= {}"
-                  .format(r_max, c_max, c1, c2, r1, r2, cc2))
+        log.debug(
+            f"Entering loop:  r_max= {r_max}, c_max= {c_max}, c1= {c1}, c2= {c2}, r1= {r1}, r2= {r2}, cc2= {cc2}"
+        )
 
         temp_section_1, temp_section_2 = table_slice_cc2(array, r2, r_max, c1, c2)
 
-        log.debug("temp_section_1:\n{}".format(temp_section_1))
-        log.debug("temp_section_2:\n{}".format(temp_section_2))
-        log.debug("duplicate_rows= {}, duplicate_columns= {}".
-                  format(duplicate_rows(temp_section_1), duplicate_rows(temp_section_2)))
+        log.debug(f"temp_section_1:\n{temp_section_1}")
+        log.debug(f"temp_section_2:\n{temp_section_2}")
+        log.debug(
+            f"duplicate_rows= {duplicate_rows(temp_section_1)}, duplicate_columns= {duplicate_rows(temp_section_2)}"
+        )
 
         if not duplicate_rows(temp_section_1) and not duplicate_columns(temp_section_2):
-            if table_object.configs['use_max_data_area']:
+            if table_object.configs["use_max_data_area"]:
                 data_area = (r_max - r2) * (c_max - c2)
-                log.debug("The data area of the new candidate C2= {} is *1: {}".format((r2, c2), data_area))
-                log.debug("Data area:\n{}".format(array[r2 + 1:r_max + 1, c2 + 1:c_max + 1]))
+                log.debug(f"The data area of the new candidate C2= {(r2, c2)} is *1: {data_area}")
+                log.debug(f"Data area:\n{array[r2 + 1 : r_max + 1, c2 + 1 : c_max + 1]}")
                 if data_area >= max_area:
                     max_area = data_area
                     cc2 = (r2, c2)
-                    log.debug("CC2= {}".format(cc2))
+                    log.debug(f"CC2= {cc2}")
                 r2 = r2 - 1
             else:
                 cc2 = (r2, c2)
-                log.debug("CC2= {}".format(cc2))
+                log.debug(f"CC2= {cc2}")
                 r2 = r2 - 1
         elif duplicate_rows(temp_section_1) and not duplicate_columns(temp_section_2):
             c2 = c2 + 1
-            if table_object.configs['use_max_data_area']:
+            if table_object.configs["use_max_data_area"]:
                 data_area = (r_max - r2) * (c_max - c2)
-                log.debug("The data area of the new candidate C2= {} is *2: {}".format((r2, c2), data_area))
-                log.debug("Data area:\n{}".format(array[r2 + 1:r_max + 1, c2 + 1:c_max + 1]))
+                log.debug(f"The data area of the new candidate C2= {(r2, c2)} is *2: {data_area}")
+                log.debug(f"Data area:\n{array[r2 + 1 : r_max + 1, c2 + 1 : c_max + 1]}")
                 if data_area >= max_area:
                     max_area = data_area
                     cc2 = (r2, c2)
-                    log.debug("CC2= {}".format(cc2))
+                    log.debug(f"CC2= {cc2}")
             else:
                 cc2 = (r2, c2)
-                log.debug("CC2= {}".format(cc2))
+                log.debug(f"CC2= {cc2}")
         elif duplicate_rows(temp_section_1) and duplicate_columns(temp_section_2):
             c2 = c2 + 1
             r2 = r2 + 1
-            if table_object.configs['use_max_data_area']:
+            if table_object.configs["use_max_data_area"]:
                 data_area = (r_max - r2) * (c_max - c2)
-                log.debug("The data area of the new candidate C2= {} is *3: {}".format((r2, c2), data_area))
-                log.debug("Data area:\n{}".format(array[r2 + 1:r_max + 1, c2 + 1:c_max + 1]))
+                log.debug(f"The data area of the new candidate C2= {(r2, c2)} is *3: {data_area}")
+                log.debug(f"Data area:\n{array[r2 + 1 : r_max + 1, c2 + 1 : c_max + 1]}")
                 if data_area >= max_area:
                     max_area = data_area
                     cc2 = (r2, c2)
-                    log.debug("CC2= {}".format(cc2))
+                    log.debug(f"CC2= {cc2}")
             else:
                 cc2 = (r2, c2)
         # if none of those above is satisfied, just finish the loop
         else:
             r2 = r2 + 1
-            if table_object.configs['use_max_data_area']:
+            if table_object.configs["use_max_data_area"]:
                 data_area = (r_max - r2) * (c_max - c2)
-                log.debug("The data area of the new candidate C2= {} is *4: {}".format((r2, c2), data_area))
-                log.debug("Data area:\n{}".format(array[r2 + 1:r_max + 1, c2 + 1:c_max + 1]))
+                log.debug(f"The data area of the new candidate C2= {(r2, c2)} is *4: {data_area}")
+                log.debug(f"Data area:\n{array[r2 + 1 : r_max + 1, c2 + 1 : c_max + 1]}")
                 if data_area >= max_area:
                     max_area = data_area
                     cc2 = (r2, c2)
-                    log.debug("CC2= {}".format(cc2))
+                    log.debug(f"CC2= {cc2}")
                 break
             else:
                 cc2 = (r2, c2)
                 break
 
     log.debug(
-        "Ended loop with:  r_max= {}, c_max= {}, c1= {}, c2= {}, r1= {}, r2= {}, cc2= {}\n\n\n\n".format(r_max,
-                                                                                                         c_max, c1,
-                                                                                                         c2, r1, r2,
-                                                                                                         cc2))
+        f"Ended loop with:  r_max= {r_max}, c_max= {c_max}, c1= {c1}, c2= {c2}, r1= {r1}, r2= {r2}, cc2= {cc2}\n\n\n\n"
+    )
 
     # re-initialization of r2 and c2 from cc2; missing in the pseudocode
     r2 = cc2[0]
     c2 = cc2[1]
 
     # Locate CC1 at intersection of the top row and the leftmost column necessary for indexing:
-    log.debug("Potentially duplicate columns:\n{}".format(table_slice_1_cc1(array, r1, r2, c2, c_max)))
+    log.debug(f"Potentially duplicate columns:\n{table_slice_1_cc1(array, r1, r2, c2, c_max)}")
     while not duplicate_columns(table_slice_1_cc1(array, r1, r2, c2, c_max)) and r1 <= r2:
-        log.debug("Potentially duplicate columns:\n{}".format(table_slice_1_cc1(array, r1, r2, c2, c_max)))
-        log.debug("Duplicate columns= {}".format(duplicate_columns(table_slice_1_cc1(array, r1, r2, c2, c_max))))
+        log.debug(f"Potentially duplicate columns:\n{table_slice_1_cc1(array, r1, r2, c2, c_max)}")
+        log.debug(
+            f"Duplicate columns= {duplicate_columns(table_slice_1_cc1(array, r1, r2, c2, c_max))}"
+        )
         r1 = r1 + 1
-        log.debug("r1= {}".format(r1))
+        log.debug(f"r1= {r1}")
 
-    log.debug("Potentially duplicate rows:\n{}".format(table_slice_2_cc1(array, r2, r_max, c1, c2)))
+    log.debug(f"Potentially duplicate rows:\n{table_slice_2_cc1(array, r2, r_max, c1, c2)}")
     while not duplicate_rows(table_slice_2_cc1(array, r2, r_max, c1, c2)) and c1 <= c2:
-        log.debug("Potentially duplicate rows:\n{}".format(table_slice_2_cc1(array, r2, r_max, c1, c2)))
-        log.debug("Duplicate rows= {}".format(duplicate_rows(table_slice_2_cc1(array, r2, r_max, c1, c2))))
+        log.debug(f"Potentially duplicate rows:\n{table_slice_2_cc1(array, r2, r_max, c1, c2)}")
+        log.debug(f"Duplicate rows= {duplicate_rows(table_slice_2_cc1(array, r2, r_max, c1, c2))}")
         c1 = c1 + 1
-        log.debug("c1= {}".format(c1))
+        log.debug(f"c1= {c1}")
 
     # final cc1 is (r1-1,c1-1), because the last run of the while loops doesn't count
     # a problem could arise if the code never stepped through the while loops,
@@ -263,7 +264,9 @@ def find_cc1_cc2(table_object, cc4, array):
     # by definition of cc2.
     # hence, the assertions:
     try:
-        assert not duplicate_columns(table_slice_1_cc1(array, r1=0, r2=cc2[0], c2=cc2[1], c_max=c_max))
+        assert not duplicate_columns(
+            table_slice_1_cc1(array, r1=0, r2=cc2[0], c2=cc2[1], c_max=c_max)
+        )
         assert not duplicate_rows(table_slice_2_cc1(array, r2=cc2[0], r_max=r_max, c1=0, c2=cc2[1]))
         assert r1 >= 0 and c1 >= 0
         cc1 = (r1 - 1, c1 - 1)
@@ -271,17 +274,17 @@ def find_cc1_cc2(table_object, cc4, array):
         raise MIPSError("Error in _find_cc1_cc2")
 
     # provision for using the uppermost row possible for cc1, if titles are turned of
-    if not table_object.configs['use_title_row']:
+    if not table_object.configs["use_title_row"]:
         if cc1[0] != 0:
-            log.debug("METHOD. Title row removed, cc1 was shifted from {} to {}".format(cc1, (0, cc1[1])))
+            log.debug(f"METHOD. Title row removed, cc1 was shifted from {cc1} to {(0, cc1[1])}")
             cc1 = (0, cc1[1])
             table_object.history._title_row_removed = True
     else:
         table_object.history._title_row_removed = False
 
     # provision for using only the first column of the table as row header
-    if table_object.configs['row_header'] is not None:
-        row_header = table_object.configs['row_header']
+    if table_object.configs["row_header"] is not None:
+        row_header = table_object.configs["row_header"]
         assert isinstance(row_header, int)
         if table_object.history.prefixed_rows:
             row_header += 1
@@ -290,8 +293,8 @@ def find_cc1_cc2(table_object, cc4, array):
         cc2 = (cc2[0], row_header)
 
     # provision for using only the first row of the table as column header
-    if table_object.configs['col_header'] is not None:
-        col_header = table_object.configs['col_header']
+    if table_object.configs["col_header"] is not None:
+        col_header = table_object.configs["col_header"]
         assert isinstance(col_header, int)
         if table_object.history.prefixing_performed and not table_object.history.prefixed_rows:
             col_header += 1
@@ -327,12 +330,12 @@ def find_cc3(table_object, cc2):
 
     # OPTION 1
     # searching from the top of table for first half-full row, starting with first row below the header:
-    n_rows = len(table_object.pre_cleaned_table[cc2[0] + 1:])
-    log.debug("n_rows= {}".format(n_rows))
+    n_rows = len(table_object.pre_cleaned_table[cc2[0] + 1 :])
+    log.debug(f"n_rows= {n_rows}")
     for row_index in range(cc2[0] + 1, cc2[0] + 1 + n_rows, 1):
         n_full = 0
-        n_columns = len(table_object.pre_cleaned_table[row_index, cc2[1] + 1:])
-        log.debug("n_columns= {}".format(n_columns))
+        n_columns = len(table_object.pre_cleaned_table[row_index, cc2[1] + 1 :])
+        log.debug(f"n_columns= {n_columns}")
         for column_index in range(cc2[1] + 1, cc2[1] + 1 + n_columns, 1):
             empty = table_object.pre_cleaned_table_empty[row_index, column_index]
             if not empty:
@@ -340,4 +343,3 @@ def find_cc3(table_object, cc2):
             if n_full >= int(n_columns / 2):
                 return row_index, cc2[1] + 1
     raise MIPSError("No CC3 critical cell found! No data region defined.")
-

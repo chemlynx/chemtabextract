@@ -20,11 +20,11 @@ from chemtabextract.input.from_any import url
         ("http://192.168.1.1/table.html", True),
         ("https://10.0.0.1/data.html", True),
         # --- invalid / non-URL strings ---
-        ("example.com/table.html", False),   # missing scheme
+        ("example.com/table.html", False),  # missing scheme
         ("not-a-url", False),
         ("", False),
-        ("/local/path/table.csv", False),    # local path, no scheme
-        ("file:///etc/passwd", False),       # file:// scheme not in whitelist
+        ("/local/path/table.csv", False),  # local path, no scheme
+        ("file:///etc/passwd", False),  # file:// scheme not in whitelist
         ("mailto:user@example.com", False),  # mailto:// scheme not in whitelist
     ],
 )

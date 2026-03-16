@@ -1,10 +1,9 @@
-# -*- coding: utf-8 -*-
 """
 Outputs the table to cvs.
 """
 
-import logging
 import csv
+import logging
 import os
 
 log = logging.getLogger(__name__)
@@ -21,6 +20,6 @@ def write_to_csv(table, file_path):
     :type file_path: str
     """
     if os.path.exists(file_path):
-        log.info("File: {} overwritten.".format(file_path))
-    with open(file_path, 'w', encoding='utf-8') as f:
+        log.info(f"File: {file_path} overwritten.")
+    with open(file_path, "w", encoding="utf-8") as f:
         csv.writer(f).writerows(table)

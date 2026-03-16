@@ -1,10 +1,10 @@
-# -*- coding: utf-8 -*-
 """
 Inputs from python list object.
 """
 
-import numpy as np
 import logging
+
+import numpy as np
 
 log = logging.getLogger(__name__)
 
@@ -18,6 +18,5 @@ def read(plist):
     :return: numpy.ndarray
     """
     length = len(sorted(plist, key=len, reverse=True)[0])
-    array = np.array([l+[None]*(length-len(l)) for l in plist], dtype='<U60')
+    array = np.array([row + [None] * (length - len(row)) for row in plist], dtype="<U60")
     return array
-

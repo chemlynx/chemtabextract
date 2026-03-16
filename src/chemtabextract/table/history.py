@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Indicates to the user which methods have been used on the table.
 This should be checked for testing on a sample dataset, to justify the choice of settings for the given domain.
@@ -59,7 +58,7 @@ class History:
     @property
     def header_extended_up(self):
         """Indicates whether the header has been extended upwards, beyond the result obtained by the MIPS
-         (*Minimum Indexing Point Search*) algorithm."""
+        (*Minimum Indexing Point Search*) algorithm."""
         return self._header_extended_up
 
     @property
@@ -74,20 +73,13 @@ class History:
         return self._table_transposed
 
     def __repr__(self):
-        out = str()
-        out += "title_row_removed       = {}".format(self.title_row_removed)
-        out += "\n" + "prefixing_performed     = {}".format(self.prefixing_performed)
-        out += "\n" + "prefixed_rows           = {}".format(self.prefixed_rows)
-        out += "\n" + "footnotes_copied        = {}".format(self.footnotes_copied)
-        out += "\n" + "spanning_cells_extended = {}".format(self.spanning_cells_extended)
-        out += "\n" + "header_extended_up      = {}".format(self.header_extended_up)
-        out += "\n" + "header_extended_down    = {}".format(self.header_extended_down)
-        out += "\n" + "table_transposed        = {}".format(self._table_transposed)
+        out = ""
+        out += f"title_row_removed       = {self.title_row_removed}"
+        out += "\n" + f"prefixing_performed     = {self.prefixing_performed}"
+        out += "\n" + f"prefixed_rows           = {self.prefixed_rows}"
+        out += "\n" + f"footnotes_copied        = {self.footnotes_copied}"
+        out += "\n" + f"spanning_cells_extended = {self.spanning_cells_extended}"
+        out += "\n" + f"header_extended_up      = {self.header_extended_up}"
+        out += "\n" + f"header_extended_down    = {self.header_extended_down}"
+        out += "\n" + f"table_transposed        = {self._table_transposed}"
         return out
-
-
-
-
-
-
-

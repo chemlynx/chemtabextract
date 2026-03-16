@@ -68,14 +68,14 @@
 
 ## 6. Milestone 5 — Pre-commit Stack (branch: feat/milestone-5-precommit-stack)
 
-- [ ] 6.1 Create `.pre-commit-config.yaml` with all required hook repos: pre-commit-hooks, ruff-pre-commit, mirrors-mypy, bandit, vulture, xenon, and local pytest-cov hook
-- [ ] 6.2 Add `[tool.ruff]`, `[tool.ruff.lint]`, `[tool.mypy]`, `[[tool.mypy.overrides]]`, `[tool.bandit]`, and `[tool.commitizen]` sections to `pyproject.toml`
-- [ ] 6.3 Run `xenon --max-absolute C src/chemtabextract` to calibrate; set `--max-absolute` threshold in the xenon hook accordingly; add a comment documenting the MIPS complexity rationale
-- [ ] 6.4 Run `pre-commit run --all-files`; fix all ruff lint/format violations
-- [ ] 6.5 Run `pre-commit run --all-files`; investigate and resolve all bandit findings (suppress false positives with `# nosec` + inline comment)
-- [ ] 6.6 Run `pre-commit run --all-files`; create `whitelist.py` (or equivalent vulture config) for public API symbols that vulture flags as dead code
-- [ ] 6.7 Run `pre-commit run --all-files`; verify mypy passes under permissive config (fix any hard errors)
-- [ ] 6.8 Run `cz changelog --unreleased-version 0.8.0`; edit generated `CHANGELOG.md` entry to describe the fork from `tabledataextractor 1.5.11`
-- [ ] 6.9 Verify `pre-commit run --all-files` exits 0 on a clean working tree
+- [x] 6.1 Create `.pre-commit-config.yaml` with all required hook repos: pre-commit-hooks, ruff-pre-commit, mirrors-mypy, bandit, vulture, xenon, and local pytest-cov hook
+- [x] 6.2 Add `[tool.ruff]`, `[tool.ruff.lint]`, `[tool.mypy]`, `[[tool.mypy.overrides]]`, `[tool.bandit]`, and `[tool.commitizen]` sections to `pyproject.toml`
+- [x] 6.3 Run `xenon --max-absolute C src/chemtabextract` to calibrate; set `--max-absolute` threshold in the xenon hook accordingly; add a comment documenting the MIPS complexity rationale
+- [x] 6.4 Run `pre-commit run --all-files`; fix all ruff lint/format violations
+- [x] 6.5 Run `pre-commit run --all-files`; investigate and resolve all bandit findings (suppress false positives with `# nosec` + inline comment)
+- [x] 6.6 Run `pre-commit run --all-files`; create `whitelist.py` (or equivalent vulture config) for public API symbols that vulture flags as dead code
+- [x] 6.7 Run `pre-commit run --all-files`; verify mypy passes under permissive config (fix any hard errors)
+- [x] 6.8 Run `cz changelog --unreleased-version 0.8.0`; edit generated `CHANGELOG.md` entry to describe the fork from `tabledataextractor 1.5.11`
+- [x] 6.9 Verify `pre-commit run --all-files` exits 0 on a clean working tree
 - [ ] 6.10 Commit: `ci: install pre-commit stack; add CHANGELOG at 0.8.0`
 - [ ] 6.11 Merge `feat/milestone-5-precommit-stack` → `main`

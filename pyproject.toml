@@ -32,6 +32,7 @@ dev = [
   "pre-commit>=4.0.0",
   "ruff>=0.9.0",
   "mypy>=1.14.0",
+  "types-requests>=2.31.0",
   "bandit>=1.8.0",
   "vulture>=2.14.0",
   "xenon>=0.9.3",
@@ -57,6 +58,34 @@ branch = true
 [tool.coverage.report]
 fail_under = 40
 show_missing = true
+
+[tool.ruff]
+line-length = 100
+target-version = "py313"
+exclude = ["examples/", "docs/"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP"]
+ignore = [
+  "E501",  # line-too-long: many existing long lines in data-heavy test files
+]
+
+[tool.mypy]
+python_version = "3.13"
+ignore_missing_imports = true
+no_strict_optional = true
+warn_unused_ignores = false
+exclude = ["^docs/", "^examples/"]
+
+[[tool.mypy.overrides]]
+module = ["chemtabextract.table.algorithms._mips"]
+# MIPS algorithm is frozen legacy code; type errors are not fixed to
+# avoid inadvertent semantic changes to the algorithm.
+ignore_errors = true
+
+[tool.bandit]
+exclude_dirs = ["tests"]
+skips = ["B101"]  # B101: assert used in tests (excluded) and library internals
 
 [tool.commitizen]
 name = "cz_conventional_commits"

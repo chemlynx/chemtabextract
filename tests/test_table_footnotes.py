@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Test Footnote() class on some input tables.
 These tests depend on some of the features of Table() working properly.
@@ -45,7 +44,9 @@ class TableF(Table):
 
 
 def test_table_use_footnotes():
-    table = TableF("./tests/data/table_example_footnotes.csv", use_footnotes=True, use_spanning_cells=False)
+    table = TableF(
+        "./tests/data/table_example_footnotes.csv", use_footnotes=True, use_spanning_cells=False
+    )
     table.print()
 
     fn = table.footnotes[0]
@@ -80,24 +81,58 @@ def test_table_use_footnotes():
 
     expected = [
         ["1 Official development assistance", "", "", "", "", "", ""],
-        ["Country", "Million dollar", "Million dollar", "Million dollar", "Percentage of GNI", "Percentage of GNI", "Percentage of GNI"],
-        ["", "2007", "2010 Test ", "2011 Test   whataboutthis ", "2007", "2010 Source: OECD. ", "2011 Source: OECD. "],
+        [
+            "Country",
+            "Million dollar",
+            "Million dollar",
+            "Million dollar",
+            "Percentage of GNI",
+            "Percentage of GNI",
+            "Percentage of GNI",
+        ],
+        [
+            "",
+            "2007",
+            "2010 Test ",
+            "2011 Test   whataboutthis ",
+            "2007",
+            "2010 Source: OECD. ",
+            "2011 Source: OECD. ",
+        ],
         [" whataboutthis ", "3735", "4580", "4936", "0.95", "1.1", "1"],
         ["2", "2669", "3826", "4799", "0.32", "0.32", "0.35"],
         ["New Zealand ", "320", "342", "429", "0.27", "0.26", "0.28"],
         ["OECD/DAC Footnote text.", "104206", "128465", "133526", "0.27", "0.32", "0.31"],
         ["c", "Footnote text.", "", "", "", "", ""],
-        ["* Test", "This is now just a note", " because the footnote text was found on the left", "", "", "", ""],
+        [
+            "* Test",
+            "This is now just a note",
+            " because the footnote text was found on the left",
+            "",
+            "",
+            "",
+            "",
+        ],
         ["†) Source: OECD.", "", "", "", "", "", ""],
         ["2", "", "", "", "", "", ""],
         ["a.whataboutthis", "", "", "", "", "", ""],
-        ["0.32 This should not be recognized as a footnote", "This should not be recognized as a footnote.", "", "", "", "", ""],
+        [
+            "0.32 This should not be recognized as a footnote",
+            "This should not be recognized as a footnote.",
+            "",
+            "",
+            "",
+            "",
+            "",
+        ],
     ]
     assert expected == table.pre_cleaned_table.tolist()
 
 
 def test_table_dont_use_footnotes():
-    table = TableF("./tests/data/table_example_footnotes.csv", use_footnotes=False, use_spanning_cells=False)
+    table = TableF(
+        "./tests/data/table_example_footnotes.csv", use_footnotes=False, use_spanning_cells=False
+    )
     table.print()
 
     fn = table.footnotes[0]
@@ -132,17 +167,41 @@ def test_table_dont_use_footnotes():
 
     expected = [
         ["1 Official development assistance", "", "", "", "", "", ""],
-        ["Country", "Million dollar", "Million dollar", "Million dollar", "Percentage of GNI", "Percentage of GNI", "Percentage of GNI"],
+        [
+            "Country",
+            "Million dollar",
+            "Million dollar",
+            "Million dollar",
+            "Percentage of GNI",
+            "Percentage of GNI",
+            "Percentage of GNI",
+        ],
         ["", "2007", "2010*", "2011* a.", "2007", "2010†)", "2011†)"],
         ["a.", "3735", "4580", "4936", "0.95", "1.1", "1"],
         ["2", "2669", "3826", "4799", "0.32", "0.32", "0.35"],
         ["New Zealand 2", "320", "342", "429", "0.27", "0.26", "0.28"],
         ["OECD/DAC c", "104206", "128465", "133526", "0.27", "0.32", "0.31"],
         ["c", "Footnote text.", "", "", "", "", ""],
-        ["* Test", "This is now just a note", " because the footnote text was found on the left", "", "", "", ""],
+        [
+            "* Test",
+            "This is now just a note",
+            " because the footnote text was found on the left",
+            "",
+            "",
+            "",
+            "",
+        ],
         ["†) Source: OECD.", "", "", "", "", "", ""],
         ["2", "", "", "", "", "", ""],
         ["a.whataboutthis", "", "", "", "", "", ""],
-        ["0.32 This should not be recognized as a footnote", "This should not be recognized as a footnote.", "", "", "", "", ""],
+        [
+            "0.32 This should not be recognized as a footnote",
+            "This should not be recognized as a footnote.",
+            "",
+            "",
+            "",
+            "",
+            "",
+        ],
     ]
     assert expected == table.pre_cleaned_table.tolist()

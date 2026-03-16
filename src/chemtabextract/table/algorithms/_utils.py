@@ -1,17 +1,18 @@
-# -*- coding: utf-8 -*-
 """
 Array utility helpers for chemtabextract.
 Internal sub-module — do not import directly from outside algorithms/.
 """
 
 import logging
+
 import numpy as np
-from chemtabextract.table.parse import StringParser, CellParser
+
+from chemtabextract.table.parse import CellParser, StringParser
 
 log = logging.getLogger(__name__)
 
 
-def empty_string(string, regex=r'^([\s\-\–\—\"]+)?$'):
+def empty_string(string, regex=r"^([\s\-\–\—\"]+)?$"):
     """
     Returns `True` if a particular string is empty, which is defined with a regular expression.
 
@@ -22,10 +23,10 @@ def empty_string(string, regex=r'^([\s\-\–\—\"]+)?$'):
     :return: True/False
     """
     empty_parser = StringParser(regex)
-    return empty_parser.parse(string, method='fullmatch')
+    return empty_parser.parse(string, method="fullmatch")
 
 
-def empty_cells(array, regex=r'^([\s\-\–\—\"]+)?$'):
+def empty_cells(array, regex=r"^([\s\-\–\—\"]+)?$"):
     """
     Returns a mask with `True` for all empty cells in the original array and `False` for non-empty cells.
 
@@ -36,7 +37,7 @@ def empty_cells(array, regex=r'^([\s\-\–\—\"]+)?$'):
     """
     empty = np.full_like(array, fill_value=False, dtype=bool)
     empty_parser = CellParser(regex)
-    for empty_cell in empty_parser.parse(array, method='fullmatch'):
+    for empty_cell in empty_parser.parse(array, method="fullmatch"):
         if array.ndim == 2:
             empty[empty_cell[0], empty_cell[1]] = True
         elif array.ndim == 1:
@@ -56,7 +57,7 @@ def standardize_empty(array):
     for row_index, row in enumerate(standardized):
         for col_index, col in enumerate(row):
             if empty_string(col):
-                standardized[row_index, col_index] = 'NoValue'
+                standardized[row_index, col_index] = "NoValue"
     return standardized
 
 
@@ -76,7 +77,7 @@ def pre_clean(array):
     for row_index, row in enumerate(array_empty):
         if False not in row:
             empty_rows.append(row_index)
-    log.debug("Empty rows {} deleted.".format(empty_rows))
+    log.debug(f"Empty rows {empty_rows} deleted.")
     pre_cleaned_table = np.delete(pre_cleaned_table, empty_rows, axis=0)
 
     # find empty columns and delete them
@@ -84,7 +85,7 @@ def pre_clean(array):
     for column_index, column in enumerate(array_empty.T):
         if False not in column:
             empty_columns.append(column_index)
-    log.debug("Empty columns {} deleted.".format(empty_columns))
+    log.debug(f"Empty columns {empty_columns} deleted.")
     pre_cleaned_table = np.delete(pre_cleaned_table, empty_columns, axis=1)
 
     # delete duplicate rows that extend over the whole table
@@ -94,7 +95,7 @@ def pre_clean(array):
     for row_index in range(0, len(pre_cleaned_table)):
         if row_index not in indices:
             removed_rows.append(row_index)
-    log.debug("Duplicate rows {} removed.".format(removed_rows))
+    log.debug(f"Duplicate rows {removed_rows} removed.")
     # deletion:
     pre_cleaned_table = pre_cleaned_table[np.sort(indices)]
 
@@ -105,7 +106,7 @@ def pre_clean(array):
     for column_index in range(0, len(pre_cleaned_table.T)):
         if column_index not in indices:
             removed_columns.append(column_index)
-    log.debug("Duplicate columns {} removed.".format(removed_columns))
+    log.debug(f"Duplicate columns {removed_columns} removed.")
     # deletion:
     pre_cleaned_table = pre_cleaned_table[:, np.sort(indices)]
 
@@ -123,7 +124,7 @@ def clean_unicode(array):
     :return: cleaned array
     """
     temp = np.copy(array)
-    temp = np.char.replace(temp, '\xa0', ' ')
+    temp = np.char.replace(temp, "\xa0", " ")
     return temp
 
 
@@ -157,4 +158,3 @@ def duplicate_columns(table):
             return False
     else:
         return False
-

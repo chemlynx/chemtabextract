@@ -1,10 +1,10 @@
-# -*- coding: utf-8 -*-
 """
 Tools for parsing the table based on regular expressions.
 """
 
 import logging
 import re
+
 import numpy as np
 
 log = logging.getLogger(__name__)
@@ -16,13 +16,13 @@ class CellParser:
     :type pattern: str
 
     """
-    def __init__(self, pattern):
 
-        log.debug('Initialization of CellParser with regex pattern: "{}"'.format(pattern))
+    def __init__(self, pattern):
+        log.debug(f'Initialization of CellParser with regex pattern: "{pattern}"')
         assert isinstance(pattern, str)
         self.pattern = pattern
 
-    def parse(self, table, method='match'):
+    def parse(self, table, method="match"):
         """
         Inputs a table and yields a tuple with the index of the next matching cell, as well as the string that
         was matched.
@@ -45,26 +45,26 @@ class CellParser:
         if table.ndim == 2:
             for row_index, row in enumerate(table):
                 for column_index, cell in enumerate(row):
-                    if method == 'match':
+                    if method == "match":
                         result = prog.match(cell)
-                    elif method == 'fullmatch':
+                    elif method == "fullmatch":
                         result = prog.fullmatch(cell)
-                    elif method == 'search':
+                    elif method == "search":
                         result = prog.search(cell)
                     if result:
                         yield row_index, column_index, result.groups()
         elif table.ndim == 1:
             for row_index, row in enumerate(table):
-                if method == 'match':
+                if method == "match":
                     result = prog.match(row)
-                elif method == 'fullmatch':
+                elif method == "fullmatch":
                     result = prog.fullmatch(row)
-                elif method == 'search':
+                elif method == "search":
                     result = prog.search(row)
                 if result:
                     yield row_index, result.groups()
 
-    def cut(self, table, method='match'):
+    def cut(self, table, method="match"):
         """
         Inputs a table and yields a tuple with the index of the next matching cell, as well as a string
         that is obtained from the original string by cutting out the match string.
@@ -83,7 +83,7 @@ class CellParser:
         for result in self.parse(table, method):
             yield result[0], result[1], prog.sub("", table[result[:2]])
 
-    def replace(self, table, repl, method='match'):
+    def replace(self, table, repl, method="match"):
         """
         Inputs a table and yields a tuple with the index of the next matching cell, as well as a string
         that is obtained from the original string by cutting out the match string and replacing it with another string.
@@ -112,11 +112,12 @@ class StringParser:
     :type pattern: str
 
     """
+
     def __init__(self, pattern):
         assert isinstance(pattern, str)
         self.pattern = pattern
 
-    def parse(self, string, method='match'):
+    def parse(self, string, method="match"):
         """
         Inputs a string and returns `True` if pattern matches.
 
@@ -133,11 +134,11 @@ class StringParser:
         result = None
         prog = re.compile(self.pattern)
 
-        if method == 'match':
+        if method == "match":
             result = prog.match(string)
-        elif method == 'fullmatch':
+        elif method == "fullmatch":
             result = prog.fullmatch(string)
-        elif method == 'search':
+        elif method == "search":
             result = prog.search(string)
         if result:
             return True

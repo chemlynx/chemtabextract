@@ -29,5 +29,3 @@ From Python List
 
 .. automodule:: tabledataextractor.input.from_list
     :members:
-
-

@@ -28,4 +28,3 @@ The algorithm for converting `html` files to `Numpy arrays` has been modified fr
     John Ricco, (2017) Using Python to scrape HTML tables with merged cells, https://johnricco.github.io/2017/04/04/python-html/
 
 Please cite these works where appropriate.
-
