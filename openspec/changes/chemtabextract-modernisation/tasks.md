@@ -77,5 +77,5 @@
 - [x] 6.7 Run `pre-commit run --all-files`; verify mypy passes under permissive config (fix any hard errors)
 - [x] 6.8 Run `cz changelog --unreleased-version 0.8.0`; edit generated `CHANGELOG.md` entry to describe the fork from `tabledataextractor 1.5.11`
 - [x] 6.9 Verify `pre-commit run --all-files` exits 0 on a clean working tree
-- [ ] 6.10 Commit: `ci: install pre-commit stack; add CHANGELOG at 0.8.0`
-- [ ] 6.11 Merge `feat/milestone-5-precommit-stack` → `main`
+- [x] 6.10 Commit: `ci: install pre-commit stack; add CHANGELOG at 0.8.0`
+- [x] 6.11 Merge `feat/milestone-5-precommit-stack` → `main`
