@@ -7,14 +7,19 @@ Reads an `html` formatted table.
 import numpy as np
 from bs4 import BeautifulSoup
 import requests
-from selenium import webdriver
-from selenium.webdriver.firefox.options import Options as FirefoxOptions
-from selenium.webdriver.chrome.options import Options as ChromeOptions
-from selenium.webdriver.edge.options import Options as EdgeOptions
-from selenium.webdriver.ie.options import Options as IeOptions
 import copy
 import logging
 from chemtabextract.exceptions import InputError
+
+try:
+    from selenium import webdriver
+    from selenium.webdriver.firefox.options import Options as FirefoxOptions
+    from selenium.webdriver.chrome.options import Options as ChromeOptions
+    from selenium.webdriver.edge.options import Options as EdgeOptions
+    from selenium.webdriver.ie.options import Options as IeOptions
+    _SELENIUM_AVAILABLE = True
+except ImportError:
+    _SELENIUM_AVAILABLE = False
 
 log = logging.getLogger(__name__)
 
@@ -170,6 +175,12 @@ def read_url(url, table_number=1):
         log.info("Package 'requests' was used.")
         return array
     except Exception:
+        if not _SELENIUM_AVAILABLE:
+            raise InputError(
+                "requests failed to fetch the URL and selenium is not installed. "
+                "Install the optional web extra to enable JS-rendered URL support: "
+                "uv add chemtabextract[web]"
+            )
         driver = configure_selenium()
         driver.get(url)
         html_file = driver.page_source
