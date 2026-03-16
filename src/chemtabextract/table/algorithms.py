@@ -951,27 +951,6 @@ def categorize_header(header):
     return f
 
 
-def build_category_table(table, cc1, cc2, cc3, cc4):
-    """
-    Build category table for given input table.
-    Original header factorization, according to Embley et al., *DOI: 10.1007/s10032-016-0259-1*.
-    This version is not used, instead :class:`~tabledataextractor.output.to_pandas.build_category_table` is being used.
-
-    :param table: Table on which to perform the categorization
-    :type table: Numpy array
-    :param cc1: key MIPS cell
-    :param cc2: key MIPS cell
-    :param cc3: key MIPS cell
-    :param cc4: key MIPS cell
-    :return: category table as numpy array
-    """
-
-    column_header = table[cc1[0]:cc2[0] + 1, cc3[1]:cc4[1] + 1]
-    row_header = table[cc3[0]:cc4[0] + 1, cc1[1]:cc2[1] + 1]
-    column_factors = categorize_header(column_header.T)
-    row_factors = categorize_header(row_header)
-
-
 def split_table(table_object):
     """
     Splits table into subtables. Yields :class:`~tabledataextractor.table.table.Table` objects.
