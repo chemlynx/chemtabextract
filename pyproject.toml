@@ -46,6 +46,18 @@ docs = [
   "ipykernel>=7.2.0",
 ]
 
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "--tb=short -q"
+
+[tool.coverage.run]
+source = ["chemtabextract"]
+branch = true
+
+[tool.coverage.report]
+fail_under = 40
+show_missing = true
+
 [tool.commitizen]
 name = "cz_conventional_commits"
 version = "0.8.0"

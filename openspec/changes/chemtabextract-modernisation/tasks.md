@@ -48,21 +48,21 @@
 
 ## 5. Milestone 4 — pytest Migration (branch: feat/milestone-4-pytest-migration)
 
-- [ ] 5.1 Create `tests/conftest.py` with at minimum a `table_example1` fixture; add further fixtures as migration reveals repeated patterns
-- [ ] 5.2 Migrate `test_input_from_csv.py` to native pytest; run suite; confirm green
-- [ ] 5.3 Migrate `test_output_from_csv.py` to native pytest; run suite; confirm green
-- [ ] 5.4 Migrate `test_trivial_table.py` to native pytest; run suite; confirm green
-- [ ] 5.5 Migrate `test_table_footnotes.py` to native pytest; run suite; confirm green
-- [ ] 5.6 Migrate `test_row_categories.py` to native pytest; run suite; confirm green
-- [ ] 5.7 Migrate `test_table_table_spanning_cells.py` to native pytest; run suite; confirm green
-- [ ] 5.8 Migrate `test_table_table_header_extension.py` to native pytest; run suite; confirm green
-- [ ] 5.9 Migrate `test_table_table_header_extens_d.py` to native pytest; run suite; confirm green
-- [ ] 5.10 Migrate `test_table_table_subtables.py` to native pytest; run suite; confirm green
-- [ ] 5.11 Migrate `test_table_table.py` to native pytest; run suite; confirm green
-- [ ] 5.12 Migrate `test_tde.py` to native pytest; run suite; confirm green
-- [ ] 5.13 Run `uv run pytest --cov=chemtabextract --cov-report=term-missing`; record measured coverage percentage; set `fail_under` in `pyproject.toml` `[tool.coverage.report]` to that value (must be ≥40)
-- [ ] 5.14 Add `[tool.pytest.ini_options]` and `[tool.coverage.run]` sections to `pyproject.toml`
-- [ ] 5.15 Verify zero `import unittest` references remain in `tests/`
+- [x] 5.1 Create `tests/conftest.py` with at minimum a `table_example1` fixture; add further fixtures as migration reveals repeated patterns
+- [x] 5.2 Migrate `test_input_from_csv.py` to native pytest; run suite; confirm green
+- [x] 5.3 Migrate `test_output_from_csv.py` to native pytest; run suite; confirm green
+- [x] 5.4 Migrate `test_trivial_table.py` to native pytest; run suite; confirm green
+- [x] 5.5 Migrate `test_table_footnotes.py` to native pytest; run suite; confirm green
+- [x] 5.6 Migrate `test_row_categories.py` to native pytest; run suite; confirm green
+- [x] 5.7 Migrate `test_table_table_spanning_cells.py` to native pytest; run suite; confirm green
+- [x] 5.8 Migrate `test_table_table_header_extension.py` to native pytest; run suite; confirm green
+- [x] 5.9 Migrate `test_table_table_header_extens_d.py` to native pytest; run suite; confirm green
+- [x] 5.10 Migrate `test_table_table_subtables.py` to native pytest; run suite; confirm green
+- [x] 5.11 Migrate `test_table_table.py` to native pytest; run suite; confirm green
+- [x] 5.12 Migrate `test_tde.py` to native pytest; run suite; confirm green
+- [x] 5.13 Run `uv run pytest --cov=chemtabextract --cov-report=term-missing`; record measured coverage percentage; set `fail_under` in `pyproject.toml` `[tool.coverage.report]` to that value (must be ≥40)
+- [x] 5.14 Add `[tool.pytest.ini_options]` and `[tool.coverage.run]` sections to `pyproject.toml`
+- [x] 5.15 Verify zero `import unittest` references remain in `tests/`
 - [ ] 5.16 Commit: `test: migrate test suite to native pytest; record coverage baseline`
 - [ ] 5.17 Merge `feat/milestone-4-pytest-migration` → `main`
 

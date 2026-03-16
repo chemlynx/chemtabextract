@@ -1,13 +1,12 @@
 # -*- coding: utf-8 -*-
 """
-tabledataextractor.tests.test_input_from_csv.py
+chemtabextract.tests.test_input_from_csv.py
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Test table parsers.
 Juraj Mavračić (jm2111@cam.ac.uk)
 Ed Beard (ejb207@cam.ac.uk)
 """
 
-import unittest
 import logging
 import os
 
@@ -16,67 +15,44 @@ from chemtabextract import Table
 log = logging.getLogger(__name__)
 
 
-class TestInputCsv(unittest.TestCase):
+def test_input_with_commas():
+    path = os.path.join(os.path.dirname(__file__), "data", "table_commas.csv")
+    table = Table(path)
 
-    def test_input_with_commas(self):
+    table.print()
+    assert table.raw_table[0][6] == "PCE (η, %)"
+    assert table.raw_table[1][0] == "2H–MoS2 (hydrothermal, 200 °C)"
+    assert table.raw_table[2][0] == "1T–MoS2 (hydrothermal, 180 °C)"
 
-        path = os.path.join(os.path.dirname(__file__), 'data', 'table_commas.csv')
-        table = Table(path)
 
-        # Normal table
-        table.print()
-        row_0_cell_6 = table.raw_table[0][6]
-        self.assertEqual(row_0_cell_6, 'PCE (η, %)')
+def test_input_with_double_quotes():
+    path = os.path.join(os.path.dirname(__file__), "data", "table_double_quotes.csv")
+    table = Table(path)
 
-        row_1_cell_0 = table.raw_table[1][0]
-        self.assertEqual(row_1_cell_0, '2H–MoS2 (hydrothermal, 200 °C)')
+    assert table.raw_table[1][0] == 'N719 "cell'
+    assert table.raw_table[3][0] == 'Hy"brid cell'
 
-        row_2_cell_0 = table.raw_table[2][0]
-        self.assertEqual(row_2_cell_0, '1T–MoS2 (hydrothermal, 180 °C)')
 
-    def test_input_with_double_quotes(self):
-        path = os.path.join(os.path.dirname(__file__), 'data', 'table_double_quotes.csv')
-        table = Table(path)
+def test_input_with_single_quotes():
+    path = os.path.join(os.path.dirname(__file__), "data", "table_single_quotes.csv")
+    table = Table(path)
 
-        row_1_cell_0 = table.raw_table[1][0]
-        self.assertEqual(row_1_cell_0, 'N719 "cell')
+    assert table.raw_table[1][0] == "N719 'cell"
+    assert table.raw_table[2][0] == "N74'9 cell"
+    assert table.raw_table[3][2] == "13'.8"
 
-        row_3_cell_0 = table.raw_table[3][0]
-        self.assertEqual(row_3_cell_0, 'Hy"brid cell')
 
-    def test_input_with_single_quotes(self):
-        path = os.path.join(os.path.dirname(__file__), 'data', 'table_single_quotes.csv')
-        table = Table(path)
+def test_input_with_blank_lines():
+    path = os.path.join(os.path.dirname(__file__), "data", "table_empty_lines.csv")
+    table = Table(path)
 
-        row_1_cell_0 = table.raw_table[1][0]
-        self.assertEqual(row_1_cell_0, "N719 'cell")
+    assert table.raw_table[0][6] == "PCE (η, %)"
+    assert table.raw_table[1][0] == "2H–MoS2 (hydrothermal, 200 °C)"
+    assert table.raw_table[2][0] == "1T–MoS2 (hydrothermal, 180 °C)"
 
-        row_2_cell_0 = table.raw_table[2][0]
-        self.assertEqual(row_2_cell_0, "N74'9 cell")
 
-        row_2_cell_0 = table.raw_table[2][0]
-        self.assertEqual(row_2_cell_0, "N74'9 cell")
+def test_table_with_broken_rows():
+    path = os.path.join(os.path.dirname(__file__), "data", "table_broken_row.csv")
+    table = Table(path)
 
-        row_3_cell_2 = table.raw_table[3][2]
-        self.assertEqual(row_3_cell_2, "13'.8")
-
-    def test_input_with_blank_lines(self):
-        path = os.path.join(os.path.dirname(__file__), 'data', 'table_empty_lines.csv')
-        table = Table(path)
-
-        # Normal table
-        row_0_cell_6 = table.raw_table[0][6]
-        self.assertEqual(row_0_cell_6, 'PCE (η, %)')
-
-        row_1_cell_0 = table.raw_table[1][0]
-        self.assertEqual(row_1_cell_0, '2H–MoS2 (hydrothermal, 200 °C)')
-
-        row_2_cell_0 = table.raw_table[2][0]
-        self.assertEqual(row_2_cell_0, '1T–MoS2 (hydrothermal, 180 °C)')
-
-    def test_table_with_broken_rows(self):
-        path = os.path.join(os.path.dirname(__file__), 'data', 'table_broken_row.csv')
-        table = Table(path)
-
-        self.assertEqual(len(table.category_table), 10)
-
+    assert len(table.category_table) == 10
