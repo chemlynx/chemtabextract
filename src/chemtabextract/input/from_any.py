@@ -3,8 +3,7 @@
 Analyzes the input and calls the appropriate input module.
 """
 
-from django.core.validators import URLValidator
-from django.core.exceptions import ValidationError
+from urllib.parse import urlparse
 import os.path
 from chemtabextract.input import from_html
 from chemtabextract.input import from_csv
@@ -14,18 +13,23 @@ import logging
 log = logging.getLogger(__name__)
 
 
-def url(name):
-    """
-    Returns `True` if input is `URL`.
-    Uses ``django.core.validators.URLValidator``.
+def url(name: str) -> bool:
+    """Returns ``True`` if *name* is a valid HTTP, HTTPS, or FTP URL.
 
-    :param name: Input string
-    :type name: str
+    Uses :mod:`urllib.parse` (stdlib). Replaces the former Django
+    ``URLValidator`` dependency.
+
+    Args:
+        name: Input string to test.
+
+    Returns:
+        ``True`` when *name* has a scheme of ``http``, ``https``, or ``ftp``
+        **and** a non-empty netloc; ``False`` otherwise.
     """
     try:
-        URLValidator()(name)
-        return True
-    except ValidationError:
+        result = urlparse(name)
+        return result.scheme in {"http", "https", "ftp"} and bool(result.netloc)
+    except ValueError:
         return False
 
 
