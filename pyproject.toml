@@ -1,6 +1,6 @@
 [project]
 name = "chemtabextract"
-version = "0.8.1"
+version = "0.8.2"
 description = "Extracts and standardises structured data from scientific tables using the MIPS algorithm."
 readme = "README.md"
 requires-python = ">=3.13"
@@ -91,7 +91,7 @@ skips = ["B101"]  # B101: assert used in tests (excluded) and library internals
 
 [tool.commitizen]
 name = "cz_conventional_commits"
-version = "0.8.1"
+version = "0.8.2"
 version_files = ["pyproject.toml:version"]
 version_provider = "pep621"
 tag_format = "v$version"
