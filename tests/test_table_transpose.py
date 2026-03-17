@@ -39,9 +39,9 @@ class TestRawTableCache:
         """_raw_table_cache must not be None — a None cache would make raw_table crash."""
         assert fresh_table._raw_table_cache is not None
 
-    def test_cache_dtype_is_u60(self, fresh_table: Table) -> None:
-        """Cached array should use '<U60' dtype, consistent with other input paths."""
-        assert fresh_table._raw_table_cache.dtype == np.dtype("<U60")
+    def test_cache_dtype_is_unicode_string(self, fresh_table: Table) -> None:
+        """Cached array should use a fixed-width Unicode string dtype."""
+        assert np.issubdtype(fresh_table._raw_table_cache.dtype, np.str_)
 
     def test_raw_table_equals_cache_when_not_transposed(self, fresh_table: Table) -> None:
         """raw_table should return the exact same array as _raw_table_cache

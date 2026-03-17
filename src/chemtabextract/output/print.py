@@ -61,7 +61,7 @@ def as_string(table):
     return output
 
 
-def list_as_PrettyTable(table_list):
+def list_as_pretty_table(table_list):
     """
     Turns list into :class:`PrettyTable` object, ready for printing.
 

@@ -162,9 +162,10 @@ def prefix_duplicate_labels(table_object, array):
     prefixed = False
 
     # 2. DO THE PREFIXING
-    # prefixing of column headers
-    if prefixed_row_or_column(array):
-        row_index, new_row = prefixed_row_or_column(array)
+    # prefixing of column headers — assign result once to avoid a second O(n×m) scan
+    _col_prefix = prefixed_row_or_column(array)
+    if _col_prefix:
+        row_index, new_row = _col_prefix
         # only perform prefixing if not below of header region (above is allowed!)
         # to allow prefixing even below the old header region cannot be right
         if row_index <= cc2[0]:
@@ -174,9 +175,10 @@ def prefix_duplicate_labels(table_object, array):
             prefixed = True
             prefixed_table = np.insert(array, row_index, new_row, axis=0)
 
-    # prefixing of row headers
-    if prefixed_row_or_column(array.T):
-        column_index, new_column = prefixed_row_or_column(array.T)
+    # prefixing of row headers — assign result once to avoid a second O(n×m) scan
+    _row_prefix = prefixed_row_or_column(array.T)
+    if _row_prefix:
+        column_index, new_column = _row_prefix
         # only perform prefixing if not to the right of header region (to the left is allowed!)
         # to allow prefixing even below the old header region cannot be right
         if column_index <= cc2[1]:
@@ -203,10 +205,10 @@ def prefix_duplicate_labels(table_object, array):
             # Another condition, the header has to end lower than before, not to include at east one
             # lower row/column that was included before
             if cc2_new[0] <= cc2[0] and cc2_new[1] <= cc2[1]:
-                table_object.history._prefixing_performed = True
+                table_object.history.set_prefixing_performed(True)
                 log.debug("METHOD. Prefixing was performed.")
                 if len(prefixed_table.T) > len(array.T):
-                    table_object.history._prefixed_rows = True
+                    table_object.history.set_prefixed_rows(True)
                 return prefixed_table
             else:
                 return array
@@ -288,21 +290,18 @@ def duplicate_spanning_cells(table_object, array):
     if table_object.configs["use_prefixing"]:
         temp2 = prefix_duplicate_labels(table_object, temp)
         # reset the prefixing flag
-        table_object.history._prefixing_performed = False
-        table_object.history._prefixed_rows = False
+        table_object.history.set_prefixing_performed(False)
+        table_object.history.set_prefixed_rows(False)
         diff_row_length = len(temp2) - len(temp)
         diff_col_length = len(temp2.T) - len(temp.T)
     log.debug("Spanning cells. Attempt to run main MIPS algorithm.")
-    # disable title row temporarily
-    old_title_row_setting = table_object.configs["use_title_row"]
-    table_object.configs["use_title_row"] = False
+    # disable title row temporarily via the context manager so the live config is always restored
     try:
-        cc1, cc2 = find_cc1_cc2(table_object, find_cc4(table_object), temp2)
+        with table_object._override_config("use_title_row", False):
+            cc1, cc2 = find_cc1_cc2(table_object, find_cc4(table_object), temp2)
     except (MIPSError, TypeError):
         log.error("Spanning cells update was not performed due to failure of MIPS algorithm.")
         return array
-    finally:
-        table_object.configs["use_title_row"] = old_title_row_setting
 
     updated = array.copy()
     # update the original table with values from the updated table if the cells are in the header regions
@@ -316,7 +315,7 @@ def duplicate_spanning_cells(table_object, array):
 
     # log
     if not np.array_equal(updated, array):
-        table_object.history._spanning_cells_extended = True
+        table_object.history.set_spanning_cells_extended(True)
         log.debug("METHOD. Spanning cells extended.")
 
     return updated
@@ -381,7 +380,7 @@ def header_extension_up(table_object, cc1):
 
     # log
     if not cc1_new == cc1:
-        table_object.history._header_extended_up = True
+        table_object.history.set_header_extended_up(True)
         log.debug("METHOD. Header extended upwards.")
 
     return cc1_new
@@ -420,7 +419,7 @@ def header_extension_down(table_object, cc1, cc2, cc4):
                 extended = True
 
         if extended:
-            table_object.history._header_extended_down = True
+            table_object.history.set_header_extended_down(True)
 
         # Check if row header can be shortened now, check duplicate rows accordingly, changes cc2 col
         if extended:
@@ -456,6 +455,6 @@ def header_extension_down(table_object, cc1, cc2, cc4):
             cc2_new = (cc2_new_row, cc2_new[1])
 
         if extended:
-            table_object.history._header_extended_down = True
+            table_object.history.set_header_extended_down(True)
 
     return cc2_new

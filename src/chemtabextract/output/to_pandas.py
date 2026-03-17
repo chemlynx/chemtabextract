@@ -2,10 +2,17 @@
 Outputs the table to a Pandas DataFrame.
 """
 
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 import pandas as pd
 
+if TYPE_CHECKING:
+    from chemtabextract.table.table import Table
 
-def to_pandas(table):
+
+def to_pandas(table: Table) -> pd.DataFrame:
     """
     Creates a `Pandas <http://pandas.pydata.org/>`_ `DataFrame` object from a :class:`~chemtabextract.table.table.Table` object.
 
@@ -19,35 +26,40 @@ def to_pandas(table):
     return df
 
 
-def find_multiindex_level(row_number, column_number, df):
+def find_multiindex_level(
+    row_number: int, column_number: int, df: pd.DataFrame
+) -> tuple[list, list]:
     """
-    Helping function for ``_build_category_table()``.
-    Finds the `Pandas` `MultiIndex level` in a given `Pandas` `DataFrame`, for a particular data value.
+    Helper for :func:`build_category_table` and :func:`print_category_table`.
+
+    Finds the `Pandas` `MultiIndex level` in a given `Pandas` `DataFrame`,
+    for a particular data value identified by row/column index.
+
+    :param row_number: Row index into the DataFrame values array.
+    :type row_number: int
+    :param column_number: Column index into the DataFrame values array.
+    :type column_number: int
+    :param df: Pandas DataFrame with MultiIndex rows and columns.
+    :type df: pandas.DataFrame
+    :return: Tuple of (row_categories, column_categories) lists.
+    :rtype: tuple[list, list]
     """
     result_index = []
     if hasattr(df.index, "codes"):
         for i, codes in enumerate(df.index.codes):
             result_index.append(df.index.levels[i][codes[row_number]])
-    # Backwards compatibility
-    elif hasattr(df.index, "labels"):
-        for i, labels in enumerate(df.index.labels):
-            result_index.append(df.index.levels[i][labels[row_number]])
     else:
         result_index.append(df.index[row_number])
     result_column = []
     if hasattr(df.columns, "codes"):
         for i, codes in enumerate(df.columns.codes):
             result_column.append(df.columns.levels[i][codes[column_number]])
-    # Backwards compatibility
-    elif hasattr(df.columns, "labels"):
-        for i, labels in enumerate(df.columns.labels):
-            result_column.append(df.columns.levels[i][labels[column_number]])
     else:
         result_column.append(df.columns[column_number])
     return result_index, result_column
 
 
-def print_category_table(df):
+def print_category_table(df: pd.DataFrame) -> None:
     """
     Prints the category table to screen, from `Pandas DataFrame` input
 
@@ -70,7 +82,7 @@ def print_category_table(df):
             )
 
 
-def build_category_table(df):
+def build_category_table(df: pd.DataFrame) -> list:
     """
     Builds the category table in form of a Python list, from `Pandas DataFrame` input
 

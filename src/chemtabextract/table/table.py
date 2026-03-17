@@ -5,13 +5,14 @@ Represents a table in a highly standardized format.
 
 """
 
+import contextlib
 import logging
 
 import numpy as np
 
 from chemtabextract.exceptions import InputError, MIPSError, TDEError
 from chemtabextract.input import from_any
-from chemtabextract.output.print import as_string, list_as_PrettyTable, print_table
+from chemtabextract.output.print import as_string, list_as_pretty_table, print_table
 from chemtabextract.output.to_csv import write_to_csv
 from chemtabextract.output.to_pandas import build_category_table, to_pandas
 from chemtabextract.table.algorithms import (
@@ -74,7 +75,7 @@ class Table:
     :type table_number: int
     """
 
-    def __init__(self, file_path, table_number=1, **kwargs):
+    def __init__(self, file_path: str | list, table_number: int = 1, **kwargs) -> None:
         """Runs required `chemtabextract` algorithms automatically upon initialization."""
         log.info(f'Initialization of table: "{file_path}"')
         self._file_path = file_path
@@ -82,10 +83,15 @@ class Table:
         self._configs = self._set_configs(**kwargs)
         self._history = History()
         self._raw_table_cache: np.ndarray | None = None
+        # Caches for CC4 and CC3 — populated at the end of _analyze_table.
+        # Cleared at the start of every _analyze_table call so that transpose()
+        # forces a full recomputation.
+        self.__cc4_cache: tuple | None = None
+        self.__cc3_cache: tuple | None = None
         self._analyze_table()
 
     @property
-    def _default_configs(self):
+    def _default_configs(self) -> dict:
         return {
             "use_title_row": True,
             "use_prefixing": True,
@@ -113,7 +119,7 @@ class Table:
             InputError: If the table has only one row or column.
         """
         temp = from_any.create_table(self._file_path, self._table_number)
-        assert isinstance(temp, np.ndarray) and temp.dtype == "<U60"
+        assert isinstance(temp, np.ndarray) and np.issubdtype(temp.dtype, np.str_)
         if temp.ndim == 1:
             msg = "Input table has only one row or column."
             log.critical(msg)
@@ -123,7 +129,21 @@ class Table:
     def _analyze_table(self):
         """
         Performs the analysis of the input table and is run automatically on initialization of the table object.
+
+        Ordering constraints (do not reorder these steps):
+          1. ``pre_clean()`` must run before ``_cc4`` is first accessed — CC4 is
+             computed from ``_pre_cleaned_table``, which does not exist before this.
+          2. ``duplicate_spanning_cells()`` must complete before ``find_cc1_cc2()``
+             uses ``_cc4`` — the spanning-cell pass changes ``_pre_cleaned_table``
+             and the CC4 from the intermediate state is intentionally passed in.
+          3. ``self._cc2`` must be set before ``self._cc3`` is accessed — CC3 is
+             derived from CC2.
         """
+        # Clear caches so that a fresh _analyze_table (e.g. after transpose())
+        # recomputes CC4 and CC3 from the new table state.
+        self.__cc4_cache = None
+        self.__cc3_cache = None
+
         # Fetch source data once; all raw_table accesses below use the cache.
         self._raw_table_cache = self._load_raw_table()
 
@@ -133,12 +153,16 @@ class Table:
             log.critical(msg)
             raise InputError(msg)
 
-        # clean-up the input array
+        # Prerequisite for step 1: clean-up the input array.
+        # _pre_cleaned_table must exist before _cc4 is accessed.
         self._pre_cleaned_table = pre_clean(self.raw_table)
         log.debug(
             f"Table shape changed from {np.shape(self.raw_table)} to {np.shape(self.pre_cleaned_table)}."
         )
 
+        # Step 2 prerequisite: spanning cells are processed with an intermediate
+        # _pre_cleaned_table; _cc4 is computed inside duplicate_spanning_cells
+        # using this pre-spanning state, which is intentional.
         if self.configs["use_spanning_cells"]:
             self._pre_cleaned_table = duplicate_spanning_cells(self, self._pre_cleaned_table)
 
@@ -152,7 +176,8 @@ class Table:
             if self.configs["use_footnotes"]:
                 self._copy_footnotes(footnote)
 
-        # Main MIPS algorithm, finding the data and header regions
+        # Main MIPS algorithm — step 2: find_cc1_cc2 uses _cc4 computed from
+        # the fully-prepared _pre_cleaned_table (post spanning-cells/prefixing).
         try:
             #: Critical cells `CC1` and `CC2`
             self._cc1, self._cc2 = find_cc1_cc2(self, self._cc4, self._pre_cleaned_table)
@@ -168,11 +193,14 @@ class Table:
             self._cc2 = header_extension_down(self, self._cc1, self._cc2, self._cc4)
             log.debug(f"Header extension, new cc1 = {self._cc1}, new cc2 = {self._cc2}")
 
-        # check if critical cell `CC3` can be found
-        try:
-            _ = self._cc3
-        except MIPSError:
-            raise
+        # Step 3: validate CC3 — self._cc2 must be set before this line.
+        # MIPSError propagates naturally if CC3 cannot be found.
+        _ = self._cc3
+
+        # Cache CC4 and CC3 now that the table is fully prepared.
+        # Subsequent property accesses return the cached values.
+        self.__cc4_cache = find_cc4(self)
+        self.__cc3_cache = find_cc3(self, self._cc2)
 
     @property
     def footnotes(self):
@@ -204,11 +232,11 @@ class Table:
         return self._history
 
     @property
-    def labels(self):
+    def labels(self) -> np.ndarray:
         """
         Cell labels.
 
-        :type: list
+        :type: numpy.ndarray
         """
         temp = np.empty_like(self._pre_cleaned_table, dtype="<U60")
         temp[:, :] = "/"
@@ -242,13 +270,32 @@ class Table:
         return temp
 
     @property
-    def configs(self):
+    def configs(self) -> dict:
         """
         Configuration keywords set at the creation of the :class:`~chemtabextract.table.table.Table` instance.
+        Returns a copy — mutating the returned dict has no effect on the table.
 
         :type: dict
         """
-        return self._configs
+        return self._configs.copy()
+
+    @contextlib.contextmanager
+    def _override_config(self, key: str, value: object):
+        """Temporarily override a single config key for the duration of a ``with`` block.
+
+        Args:
+            key: The config key to override.
+            value: The temporary value to use.
+
+        Yields:
+            Nothing. The override is active for the body of the ``with`` block.
+        """
+        original = self._configs[key]
+        self._configs[key] = value
+        try:
+            yield
+        finally:
+            self._configs[key] = original
 
     @property
     def raw_table(self) -> np.ndarray:
@@ -262,7 +309,7 @@ class Table:
         return self._raw_table_cache.T
 
     @property
-    def pre_cleaned_table(self):
+    def pre_cleaned_table(self) -> np.ndarray:
         """
         Cleaned-up table.
         This table is used for labelling the table regions, finding data-cells and building the category table.
@@ -272,7 +319,7 @@ class Table:
         return self._pre_cleaned_table
 
     @property
-    def pre_cleaned_table_empty(self):
+    def pre_cleaned_table_empty(self) -> np.ndarray:
         """
         Mask array with `True` for all empty cells of the ``pre_cleaned_table``.
 
@@ -281,7 +328,7 @@ class Table:
         return empty_cells(self._pre_cleaned_table)
 
     @property
-    def category_table(self):
+    def category_table(self) -> list:
         """
         Standardized table, where each row corresponds to a single data point of the original table.
         The columns are the row and column categories where the data point belongs to.
@@ -295,7 +342,7 @@ class Table:
             raise MIPSError(msg)
 
     @property
-    def col_header(self):
+    def col_header(self) -> np.ndarray:
         """
         Column header of the table.
 
@@ -310,7 +357,7 @@ class Table:
             raise MIPSError(msg)
 
     @property
-    def row_header(self):
+    def row_header(self) -> np.ndarray:
         """
         Row header of the table.
 
@@ -325,7 +372,7 @@ class Table:
             raise MIPSError(msg)
 
     @property
-    def stub_header(self):
+    def stub_header(self) -> np.ndarray:
         """
         Stub header of the table.
 
@@ -340,7 +387,7 @@ class Table:
             raise MIPSError(msg)
 
     @property
-    def data(self):
+    def data(self) -> np.ndarray:
         """
         Data region of the table.
 
@@ -358,7 +405,7 @@ class Table:
             raise MIPSError(msg)
 
     @property
-    def subtables(self):
+    def subtables(self) -> list:
         """
         List of all subtables.
         Each subtable is an instance of :class:`~chemtabextract.table.table.Table`.
@@ -434,24 +481,39 @@ class Table:
         transpose it to see how it looks like and if the results of the standardization are different.
         """
         self._history = History()
-        self.history._table_transposed = True
+        self.history.set_table_transposed(True)
         self._analyze_table()
 
     @property
     def _cc4(self):
-        """Critical cell `CC4`."""
+        """Critical cell ``CC4``.
+
+        Returns the cached value when available (after ``_analyze_table``
+        completes).  Falls back to a fresh computation during the analysis
+        pipeline itself, where intermediate table states are in play.
+        """
+        if self.__cc4_cache is not None:
+            return self.__cc4_cache
         return find_cc4(self)
 
     @property
     def _cc3(self):
-        """Critical cell `CC3`."""
+        """Critical cell ``CC3``.
+
+        Returns the cached value when available (after ``_analyze_table``
+        completes).  Falls back to a fresh computation during the analysis
+        pipeline itself.
+        """
+        if self.__cc3_cache is not None:
+            return self.__cc3_cache
         return find_cc3(self, self._cc2)
 
     def _set_configs(self, **kwargs):
         """Sets the configuration parameters based on the user input."""
-        configs = self._default_configs
+        defaults = self._default_configs  # access once; property creates a new dict each time
+        configs = defaults
         for key, value in kwargs.items():
-            if key in self._default_configs:
+            if key in defaults:
                 configs[key] = value
             else:
                 msg = f'Keyword "{key}" does not exist.'
@@ -466,7 +528,7 @@ class Table:
         """
         if not np.array_equal(self._pre_cleaned_table, footnote.pre_cleaned_table):
             self._pre_cleaned_table = np.copy(footnote.pre_cleaned_table)
-            self.history._footnotes_copied = True
+            self.history.set_footnotes_copied(True)
             log.debug("METHOD. Footnotes copied into cells.")
 
     def print(self):
@@ -501,7 +563,7 @@ class Table:
     def __str__(self):
         """As the user wants to see it"""
         log.debug(f"Printing table: {self._file_path}")
-        t = list_as_PrettyTable(self.category_table)
+        t = list_as_pretty_table(self.category_table)
         return str(t)
 
     def __repr__(self):
@@ -515,7 +577,7 @@ class Table:
                 (self._pre_cleaned_table, np.full((1, array_width), "", dtype="<U60"), self.labels)
             )
         )
-        t = list_as_PrettyTable(self.category_table)
+        t = list_as_pretty_table(self.category_table)
         return intro + "\n\n" + input_string + results_string + str(t)
 
 
@@ -538,11 +600,11 @@ class TrivialTable(Table):
 
     """
 
-    def __init__(self, file_path, table_number=1, **kwargs):
+    def __init__(self, file_path: str | list, table_number: int = 1, **kwargs) -> None:
         super().__init__(file_path=file_path, table_number=table_number, **kwargs)
 
     @property
-    def _default_configs(self):
+    def _default_configs(self) -> dict:
         return {
             "standardize_empty_data": False,
             "clean_row_header": False,
@@ -655,15 +717,24 @@ class TrivialTable(Table):
 
     @property
     def footnotes(self):
-        """None"""
+        """Always returns ``None``.
+
+        :class:`TrivialTable` performs no footnote analysis.
+        """
         return None
 
     @property
     def title_row(self):
-        """None"""
+        """Always returns ``None``.
+
+        :class:`TrivialTable` does not identify a title row.
+        """
         return None
 
     @property
     def subtables(self):
-        """None"""
+        """Always returns ``None``.
+
+        :class:`TrivialTable` does not split into subtables.
+        """
         return None

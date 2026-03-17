@@ -6,36 +6,8 @@ Internal sub-module — do not import directly from outside algorithms/.
 import logging
 
 import numpy as np
-from sympy import Symbol, factor_list
 
 log = logging.getLogger(__name__)
-
-
-def categorize_header(header):
-    """
-    Performs header categorization (calls the `SymPy` `fact` function) for a given table.
-
-    :param header: header region, Numpy array
-    :return: factor_list
-    """
-
-    # empty expression and part of the expression that will be factorized
-    # these are SymPy expressions
-    expression = 0
-    part = 0
-    for row_index, row in enumerate(header):
-        for column_index, cell in enumerate(row):
-            if column_index == 0:
-                part = Symbol(cell)
-            else:
-                part = part * Symbol(cell)
-        expression = expression + part
-    # factorization
-    # f = factor(expression, deep=True)
-    f = factor_list(expression)
-    log.debug(f"Factorization, initial header: {expression}")
-    log.debug(f"Factorization, factorized header: {f}")
-    return f
 
 
 def split_table(table_object):
@@ -128,7 +100,19 @@ def find_row_header_table(category_table, stub_header):
 
 def clean_row_header(pre_cleaned_table, cc2):
     """
-    Cleans the row header by removing duplicate rows that span the whole table.
+    Remove duplicate rows from the data region of the table.
+
+    Rows above and including ``cc2`` (the stub-header boundary) are left
+    unchanged.  Below that boundary, rows that are identical to another row
+    spanning the full table width are removed.
+
+    :param pre_cleaned_table: Cleaned input table as a numpy array.
+    :type pre_cleaned_table: numpy.ndarray
+    :param cc2: Critical cell CC2 — ``(row_index, col_index)`` defining the
+        header boundary.
+    :type cc2: tuple[int, int]
+    :return: Table with duplicate full-width rows removed from the data region.
+    :rtype: numpy.ndarray
     """
     unmodified_part = pre_cleaned_table[: cc2[0] + 1, :]
     modified_part = pre_cleaned_table[cc2[0] + 1 :, :]

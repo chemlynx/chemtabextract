@@ -6,6 +6,8 @@ import logging
 from pathlib import Path
 from urllib.parse import urlparse
 
+import numpy as np
+
 from chemtabextract.input import from_csv, from_html, from_list
 
 log = logging.getLogger(__name__)
@@ -31,12 +33,14 @@ def url(name: str) -> bool:
         return False
 
 
-def html(name):
-    """
-    Returns `True` if input is `html` file.
+def html(name: str) -> bool:
+    """Returns ``True`` if *name* is a path to an existing ``.html`` file.
 
-    :param name: Input string
-    :type name: str
+    Args:
+        name: Input string (file path).
+
+    Returns:
+        ``True`` when the path exists and ends with ``.html``; ``False`` otherwise.
     """
     if Path(name).is_file() and name.endswith(".html"):
         return True
@@ -44,12 +48,14 @@ def html(name):
         return False
 
 
-def csv(name):
-    """
-    Returns `True` if input is `csv` file.
+def csv(name: str) -> bool:
+    """Returns ``True`` if *name* is a path to an existing ``.csv`` file.
 
-    :param name: Input string
-    :type name: str
+    Args:
+        name: Input string (file path).
+
+    Returns:
+        ``True`` when the path exists and ends with ``.csv``; ``False`` otherwise.
     """
     if Path(name).is_file() and name.endswith(".csv"):
         return True
@@ -57,16 +63,20 @@ def csv(name):
         return False
 
 
-def create_table(name_key, table_number=1):
-    """
-    Checks the input and calls the appropriate modules for conversion.
-    Returns a numpy array with the raw table.
+def create_table(name_key: str | Path | list, table_number: int = 1) -> np.ndarray:
+    """Check the input type and dispatch to the appropriate parser.
 
-    :param name_key: Path to `.html` or `.cvs` file, `URL` or `python list` that is used as input
-    :type name_key: str | Path | list
-    :param table_number: Number of the table that we want to input if there are several at the given address/path
-    :type table_number: int
-    :return: table as numpy.array
+    Args:
+        name_key: Path to an ``.html`` or ``.csv`` file, a URL string, or a
+            multidimensional Python list.
+        table_number: 1-based index of the table to read when multiple tables
+            are present at the source.
+
+    Returns:
+        The raw table as a numpy array of Unicode strings.
+
+    Raises:
+        TypeError: When *name_key* is not a recognised input type.
     """
     # Normalise pathlib.Path objects so all downstream predicates and
     # urllib.parse.urlparse() receive a plain string.
@@ -83,7 +93,7 @@ def create_table(name_key, table_number=1):
                 "Supported are: path to .html or .cvs file, URL or multidimensional python list object"
             )
             log.critical(msg)
-            raise TypeError(msg, str(name_key))
+            raise TypeError(f"{msg}: {name_key!r}")
 
     elif url(name_key):
         log.info(f"Url: {name_key}")
@@ -100,4 +110,4 @@ def create_table(name_key, table_number=1):
     else:
         msg = "Input is invalid. Supported are: path to .html or .cvs file, URL or multidimensional python list object"
         log.critical(msg)
-        raise TypeError(msg, str(name_key))
+        raise TypeError(f"{msg}: {name_key!r}")

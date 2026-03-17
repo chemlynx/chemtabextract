@@ -9,17 +9,31 @@ import numpy as np
 
 log = logging.getLogger(__name__)
 
+_TRUNCATION_WARNING_THRESHOLD = 200
 
-def read(file_path):
-    """
-    :param file_path: Path to `.csv` input file
-    :type file_path: str
-    :return: numpy.ndarray
-    """
 
+def read(file_path: str) -> np.ndarray:
+    """Read a UTF-8 encoded CSV file and return the contents as a numpy array.
+
+    Args:
+        file_path: Path to the ``.csv`` input file.
+
+    Returns:
+        The table as a numpy array of Unicode strings with a dtype wide enough
+        to hold all cell values without truncation.
+    """
     with open(file_path, encoding="utf-8") as f:
-        array = [elem for elem in list(csv.reader(f)) if elem]
-        n = len(array[0])
-        array = [x for x in array if len(x) == n]  # Only include rows with data for every column
-        array = np.asarray(array, dtype="<U60")
+        rows = [elem for elem in list(csv.reader(f)) if elem]
+        n = len(rows[0])
+        rows = [x for x in rows if len(x) == n]  # Only include rows with data for every column
+
+    # Derive dtype width from actual cell content to avoid silent truncation.
+    max_len = max((len(cell) for row in rows for cell in row), default=1)
+    if max_len > _TRUNCATION_WARNING_THRESHOLD:
+        log.warning(
+            f"CSV input contains cells up to {max_len} characters wide. "
+            "Values exceeding this length will be stored in full but may indicate "
+            "unexpected data (e.g. embedded HTML or very long IUPAC names)."
+        )
+    array = np.asarray(rows, dtype=f"<U{max(max_len, 1)}")
     return array

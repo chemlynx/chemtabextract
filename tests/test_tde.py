@@ -575,52 +575,52 @@ def test_07():
     expected_category_table = [
         [
             "3735",
-            ["Norway DAC-countries are members of OECD's Development Assis"],
+            ["Norway DAC-countries are members of OECD's Development Assistance Co"],
             ["Million dollar", "2007"],
         ],
         [
             "4081",
-            ["Norway DAC-countries are members of OECD's Development Assis"],
+            ["Norway DAC-countries are members of OECD's Development Assistance Co"],
             ["Million dollar", "2009"],
         ],
         [
             "4006",
-            ["Norway DAC-countries are members of OECD's Development Assis"],
+            ["Norway DAC-countries are members of OECD's Development Assistance Co"],
             ["Million dollar", "2008"],
         ],
         [
             "4580",
-            ["Norway DAC-countries are members of OECD's Development Assis"],
+            ["Norway DAC-countries are members of OECD's Development Assistance Co"],
             ["Million dollar", "2010 Source: OECD "],
         ],
         [
             "4936",
-            ["Norway DAC-countries are members of OECD's Development Assis"],
+            ["Norway DAC-countries are members of OECD's Development Assistance Co"],
             ["Million dollar", "2011 Source: OECD "],
         ],
         [
             "0.95",
-            ["Norway DAC-countries are members of OECD's Development Assis"],
+            ["Norway DAC-countries are members of OECD's Development Assistance Co"],
             ["Percentage of GNI", "2007"],
         ],
         [
             "0.89",
-            ["Norway DAC-countries are members of OECD's Development Assis"],
+            ["Norway DAC-countries are members of OECD's Development Assistance Co"],
             ["Percentage of GNI", "2008"],
         ],
         [
             "1.06",
-            ["Norway DAC-countries are members of OECD's Development Assis"],
+            ["Norway DAC-countries are members of OECD's Development Assistance Co"],
             ["Percentage of GNI", "2009"],
         ],
         [
             "1.1",
-            ["Norway DAC-countries are members of OECD's Development Assis"],
+            ["Norway DAC-countries are members of OECD's Development Assistance Co"],
             ["Percentage of GNI", "2010 Source: OECD "],
         ],
         [
             "1",
-            ["Norway DAC-countries are members of OECD's Development Assis"],
+            ["Norway DAC-countries are members of OECD's Development Assistance Co"],
             ["Percentage of GNI", "2011 Source: OECD "],
         ],
         ["2562", ["Denmark"], ["Million dollar", "2007"]],

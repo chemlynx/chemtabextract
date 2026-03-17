@@ -4,12 +4,15 @@ Reads an `html` formatted table.
 
 import copy
 import logging
+from itertools import product
 
 import numpy as np
 import requests
 from bs4 import BeautifulSoup
 
 from chemtabextract.exceptions import InputError
+
+_TRUNCATION_WARNING_THRESHOLD = 200
 
 try:
     from selenium import webdriver
@@ -22,7 +25,7 @@ except ImportError:
 log = logging.getLogger(__name__)
 
 
-def makearray(html_table):
+def makearray(html_table) -> np.ndarray:
     """
     Creates a numpy array from an `.html` file, taking `rowspan` and `colspan` into account.
 
@@ -42,9 +45,9 @@ def makearray(html_table):
             if len(col_tags) > n_cols:
                 n_cols = len(col_tags)
 
-    # according to numpy documentation fill_value should be of type Union[int, float, complex]
-    # however, 'str' works just fine
-    array = np.full((n_rows, n_cols), fill_value="", dtype="<U60")
+    # Use object dtype as a build buffer so no cell text is truncated during
+    # iteration.  The array is cast to a narrow Unicode dtype at the end.
+    array = np.full((n_rows, n_cols), fill_value="", dtype=object)
 
     # list to store rowspan values
     skip_index = [0 for i in range(0, n_cols)]
@@ -104,6 +107,10 @@ def makearray(html_table):
                 if rowspan:
                     for spanned_row in range(row_counter + 1, row_counter + int(rowspan)):
                         array[spanned_row, col_counter] = cell_data
+                # Fill intersection (corner) cells when both rowspan and colspan are set
+                if rowspan and colspan:
+                    for r, c in product(range(1, int(rowspan)), range(1, int(colspan))):
+                        array[row_counter + r, col_counter + c] = cell_data
 
                 # record column skipping index
                 if row_dim[row_dim_counter] > 1:
@@ -115,11 +122,31 @@ def makearray(html_table):
         # adjust column skipping index
         skip_index = [i - 1 if i > 0 else i for i in this_skip_index]
 
-    return array
+    # Derive dtype width from actual cell content to avoid silent truncation.
+    max_len = max((len(str(cell)) for cell in array.flat), default=1)
+    if max_len > _TRUNCATION_WARNING_THRESHOLD:
+        log.warning(
+            f"HTML input contains cells up to {max_len} characters wide. "
+            "Values exceeding this length will be stored in full but may indicate "
+            "unexpected data (e.g. embedded HTML or very long IUPAC names)."
+        )
+    return array.astype(f"<U{max(max_len, 1)}")
 
 
-def read_file(file_path, table_number=1):
-    """Reads an .html file and returns a numpy array."""
+def read_file(file_path: str, table_number: int = 1) -> np.ndarray:
+    """Read an HTML file and return the specified table as a numpy array.
+
+    Args:
+        file_path: Path to the ``.html`` file.
+        table_number: 1-based index of the table to read.  The first table on
+            the page is ``1`` (the default).
+
+    Returns:
+        The table as a numpy array of Unicode strings.
+
+    Raises:
+        InputError: When *table_number* exceeds the number of tables in the file.
+    """
     with open(file_path, encoding="UTF-8") as file:
         html_soup = BeautifulSoup(file, features="lxml")
     try:
@@ -158,14 +185,23 @@ def configure_selenium(browser="Firefox", geckodriver_path=None):
     return None
 
 
-def read_url(url, table_number=1):
-    """
-    Reads in a table from an URL and returns a numpy array. Will try `Requests <http://docs.python-requests.org/en/master/>`_ first. If it doesn't succeed, `Selenium <https://selenium-python.readthedocs.io/>`_ will be used.
+def read_url(url: str, table_number: int = 1) -> np.ndarray:
+    """Fetch a table from a URL and return it as a numpy array.
 
-    :param url: Url of the page where the table is located
-    :type url: str
-    :param table_number: Number of Table on the web page.
-    :type table_number: int
+    Tries the ``requests`` library first; falls back to Selenium if the initial
+    request fails (requires the ``[web]`` optional extra).
+
+    Args:
+        url: URL of the page containing the table.
+        table_number: 1-based index of the table on the page (default ``1``).
+
+    Returns:
+        The table as a numpy array of Unicode strings.
+
+    Raises:
+        TypeError: When *table_number* is not an integer.
+        InputError: When *table_number* is out of range, or when ``requests``
+            fails and Selenium is not installed.
     """
 
     if not isinstance(table_number, int):
