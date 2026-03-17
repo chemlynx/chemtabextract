@@ -6,36 +6,8 @@ Internal sub-module — do not import directly from outside algorithms/.
 import logging
 
 import numpy as np
-from sympy import Symbol, factor_list
 
 log = logging.getLogger(__name__)
-
-
-def categorize_header(header):
-    """
-    Performs header categorization (calls the `SymPy` `fact` function) for a given table.
-
-    :param header: header region, Numpy array
-    :return: factor_list
-    """
-
-    # empty expression and part of the expression that will be factorized
-    # these are SymPy expressions
-    expression = 0
-    part = 0
-    for row_index, row in enumerate(header):
-        for column_index, cell in enumerate(row):
-            if column_index == 0:
-                part = Symbol(cell)
-            else:
-                part = part * Symbol(cell)
-        expression = expression + part
-    # factorization
-    # f = factor(expression, deep=True)
-    f = factor_list(expression)
-    log.debug(f"Factorization, initial header: {expression}")
-    log.debug(f"Factorization, factorized header: {f}")
-    return f
 
 
 def split_table(table_object):

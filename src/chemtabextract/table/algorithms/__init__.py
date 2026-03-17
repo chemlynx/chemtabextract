@@ -6,7 +6,6 @@ _structure, _categorize) directly. Import from this facade instead.
 """
 
 from chemtabextract.table.algorithms._categorize import (
-    categorize_header,  # noqa: F401
     clean_row_header,  # noqa: F401
     find_row_header_table,  # noqa: F401
     split_table,  # noqa: F401
