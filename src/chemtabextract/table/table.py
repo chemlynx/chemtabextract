@@ -432,7 +432,7 @@ class Table:
         transpose it to see how it looks like and if the results of the standardization are different.
         """
         self._history = History()
-        self.history._table_transposed = True
+        self.history.set_table_transposed(True)
         self._analyze_table()
 
     @property
@@ -465,7 +465,7 @@ class Table:
         """
         if not np.array_equal(self._pre_cleaned_table, footnote.pre_cleaned_table):
             self._pre_cleaned_table = np.copy(footnote.pre_cleaned_table)
-            self.history._footnotes_copied = True
+            self.history.set_footnotes_copied(True)
             log.debug("METHOD. Footnotes copied into cells.")
 
     def print(self):

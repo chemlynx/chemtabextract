@@ -72,6 +72,43 @@ class History:
         """Indicates whether the table has been transposed."""
         return self._table_transposed
 
+    # ------------------------------------------------------------------
+    # Setter methods — callers MUST use these instead of accessing private
+    # attributes directly.
+    # ------------------------------------------------------------------
+
+    def set_title_row_removed(self, value: bool) -> None:
+        """Set the ``title_row_removed`` flag."""
+        self._title_row_removed = value
+
+    def set_prefixing_performed(self, value: bool) -> None:
+        """Set the ``prefixing_performed`` flag."""
+        self._prefixing_performed = value
+
+    def set_prefixed_rows(self, value: bool) -> None:
+        """Set the ``prefixed_rows`` flag."""
+        self._prefixed_rows = value
+
+    def set_footnotes_copied(self, value: bool) -> None:
+        """Set the ``footnotes_copied`` flag."""
+        self._footnotes_copied = value
+
+    def set_spanning_cells_extended(self, value: bool) -> None:
+        """Set the ``spanning_cells_extended`` flag."""
+        self._spanning_cells_extended = value
+
+    def set_header_extended_up(self, value: bool) -> None:
+        """Set the ``header_extended_up`` flag."""
+        self._header_extended_up = value
+
+    def set_header_extended_down(self, value: bool) -> None:
+        """Set the ``header_extended_down`` flag."""
+        self._header_extended_down = value
+
+    def set_table_transposed(self, value: bool) -> None:
+        """Set the ``table_transposed`` flag."""
+        self._table_transposed = value
+
     def __repr__(self):
         out = ""
         out += f"title_row_removed       = {self.title_row_removed}"
@@ -81,5 +118,5 @@ class History:
         out += "\n" + f"spanning_cells_extended = {self.spanning_cells_extended}"
         out += "\n" + f"header_extended_up      = {self.header_extended_up}"
         out += "\n" + f"header_extended_down    = {self.header_extended_down}"
-        out += "\n" + f"table_transposed        = {self._table_transposed}"
+        out += "\n" + f"table_transposed        = {self.table_transposed}"
         return out
