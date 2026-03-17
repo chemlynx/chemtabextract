@@ -130,9 +130,12 @@ def clean_unicode(array):
 
 def duplicate_rows(table):
     """
-    Returns True if there are duplicate rows in the table and False if there are no duplicate rows
-    :param table:
-    :return: True or False
+    Returns ``True`` if there are duplicate rows in *table*, ``False`` otherwise.
+
+    :param table: Input numpy array to test for duplicate rows.
+    :type table: numpy.ndarray
+    :return: ``True`` when duplicate rows are present; ``False`` otherwise.
+    :rtype: bool
     """
     if table.ndim > 0 and table.size:
         _, indices = np.unique(table, axis=0, return_index=True)
@@ -146,9 +149,12 @@ def duplicate_rows(table):
 
 def duplicate_columns(table):
     """
-    Returns True if there are duplicate columns in the table and False if there are no duplicate columns
-    :param table:
-    :return: True or False
+    Returns ``True`` if there are duplicate columns in *table*, ``False`` otherwise.
+
+    :param table: Input numpy array to test for duplicate columns.
+    :type table: numpy.ndarray
+    :return: ``True`` when duplicate columns are present; ``False`` otherwise.
+    :rtype: bool
     """
     if table.T.ndim > 0 and table.T.size:
         _, indices = np.unique(table.T, axis=0, return_index=True)

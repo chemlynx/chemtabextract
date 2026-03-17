@@ -717,15 +717,24 @@ class TrivialTable(Table):
 
     @property
     def footnotes(self):
-        """None"""
+        """Always returns ``None``.
+
+        :class:`TrivialTable` performs no footnote analysis.
+        """
         return None
 
     @property
     def title_row(self):
-        """None"""
+        """Always returns ``None``.
+
+        :class:`TrivialTable` does not identify a title row.
+        """
         return None
 
     @property
     def subtables(self):
-        """None"""
+        """Always returns ``None``.
+
+        :class:`TrivialTable` does not split into subtables.
+        """
         return None
