@@ -3,7 +3,7 @@ Analyzes the input and calls the appropriate input module.
 """
 
 import logging
-import os.path
+from pathlib import Path
 from urllib.parse import urlparse
 
 from chemtabextract.input import from_csv, from_html, from_list
@@ -38,7 +38,7 @@ def html(name):
     :param name: Input string
     :type name: str
     """
-    if os.path.isfile(name) and name.endswith(".html"):
+    if Path(name).is_file() and name.endswith(".html"):
         return True
     else:
         return False
@@ -51,7 +51,7 @@ def csv(name):
     :param name: Input string
     :type name: str
     """
-    if os.path.isfile(name) and name.endswith(".csv"):
+    if Path(name).is_file() and name.endswith(".csv"):
         return True
     else:
         return False

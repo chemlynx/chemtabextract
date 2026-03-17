@@ -30,11 +30,11 @@
 - **WHEN** `from chemtabextract.exceptions import TDEError` is executed
 - **THEN** the symbol is available
 
-### Requirement: Dead function build_category_table is removed
-The function `build_category_table` SHALL NOT exist anywhere in `src/chemtabextract/`. No import site references it.
+### Requirement: Dead function build_category_table removed from algorithms.py
+The dead `build_category_table` function that existed in `src/chemtabextract/table/algorithms.py` SHALL be removed. Note: a separate, live `build_category_table` function in `src/chemtabextract/output/to_pandas.py` is used by `table.py` and SHALL be retained.
 
-#### Scenario: Function absent from codebase
-- **WHEN** the `src/` tree is grepped for `build_category_table`
+#### Scenario: Dead copy absent from algorithms module
+- **WHEN** `src/chemtabextract/table/algorithms/` is grepped for `build_category_table`
 - **THEN** no matches are found
 
 ### Requirement: Module-level metadata constants removed from __init__.py
