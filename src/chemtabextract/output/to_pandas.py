@@ -21,27 +21,30 @@ def to_pandas(table):
 
 def find_multiindex_level(row_number, column_number, df):
     """
-    Helping function for ``_build_category_table()``.
-    Finds the `Pandas` `MultiIndex level` in a given `Pandas` `DataFrame`, for a particular data value.
+    Helper for :func:`build_category_table` and :func:`print_category_table`.
+
+    Finds the `Pandas` `MultiIndex level` in a given `Pandas` `DataFrame`,
+    for a particular data value identified by row/column index.
+
+    :param row_number: Row index into the DataFrame values array.
+    :type row_number: int
+    :param column_number: Column index into the DataFrame values array.
+    :type column_number: int
+    :param df: Pandas DataFrame with MultiIndex rows and columns.
+    :type df: pandas.DataFrame
+    :return: Tuple of (row_categories, column_categories) lists.
+    :rtype: tuple[list, list]
     """
     result_index = []
     if hasattr(df.index, "codes"):
         for i, codes in enumerate(df.index.codes):
             result_index.append(df.index.levels[i][codes[row_number]])
-    # Backwards compatibility
-    elif hasattr(df.index, "labels"):
-        for i, labels in enumerate(df.index.labels):
-            result_index.append(df.index.levels[i][labels[row_number]])
     else:
         result_index.append(df.index[row_number])
     result_column = []
     if hasattr(df.columns, "codes"):
         for i, codes in enumerate(df.columns.codes):
             result_column.append(df.columns.levels[i][codes[column_number]])
-    # Backwards compatibility
-    elif hasattr(df.columns, "labels"):
-        for i, labels in enumerate(df.columns.labels):
-            result_column.append(df.columns.levels[i][labels[column_number]])
     else:
         result_column.append(df.columns[column_number])
     return result_index, result_column
