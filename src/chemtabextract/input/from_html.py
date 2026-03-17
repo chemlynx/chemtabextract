@@ -12,6 +12,8 @@ from bs4 import BeautifulSoup
 
 from chemtabextract.exceptions import InputError
 
+_TRUNCATION_WARNING_THRESHOLD = 200
+
 try:
     from selenium import webdriver
     from selenium.webdriver.firefox.options import Options as FirefoxOptions
@@ -43,9 +45,9 @@ def makearray(html_table):
             if len(col_tags) > n_cols:
                 n_cols = len(col_tags)
 
-    # according to numpy documentation fill_value should be of type Union[int, float, complex]
-    # however, 'str' works just fine
-    array = np.full((n_rows, n_cols), fill_value="", dtype="<U60")
+    # Use object dtype as a build buffer so no cell text is truncated during
+    # iteration.  The array is cast to a narrow Unicode dtype at the end.
+    array = np.full((n_rows, n_cols), fill_value="", dtype=object)
 
     # list to store rowspan values
     skip_index = [0 for i in range(0, n_cols)]
@@ -120,7 +122,15 @@ def makearray(html_table):
         # adjust column skipping index
         skip_index = [i - 1 if i > 0 else i for i in this_skip_index]
 
-    return array
+    # Derive dtype width from actual cell content to avoid silent truncation.
+    max_len = max((len(str(cell)) for cell in array.flat), default=1)
+    if max_len > _TRUNCATION_WARNING_THRESHOLD:
+        log.warning(
+            f"HTML input contains cells up to {max_len} characters wide. "
+            "Values exceeding this length will be stored in full but may indicate "
+            "unexpected data (e.g. embedded HTML or very long IUPAC names)."
+        )
+    return array.astype(f"<U{max(max_len, 1)}")
 
 
 def read_file(file_path, table_number=1):

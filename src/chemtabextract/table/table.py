@@ -114,7 +114,7 @@ class Table:
             InputError: If the table has only one row or column.
         """
         temp = from_any.create_table(self._file_path, self._table_number)
-        assert isinstance(temp, np.ndarray) and temp.dtype == "<U60"
+        assert isinstance(temp, np.ndarray) and np.issubdtype(temp.dtype, np.str_)
         if temp.ndim == 1:
             msg = "Input table has only one row or column."
             log.critical(msg)
