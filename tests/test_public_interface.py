@@ -1,11 +1,14 @@
 """Smoke tests for the chemtabextract public interface.
 
-Verifies that all exported symbols are importable from the top-level package
-and that importing chemtabextract does not create any log files.
+Verifies that all exported symbols are importable from the top-level package,
+that exception classes behave correctly, and that importing chemtabextract
+does not create any log files.
 """
 
 import importlib
 import logging
+
+import pytest
 
 
 def test_top_level_imports() -> None:
@@ -42,3 +45,53 @@ def test_no_log_file_created(tmp_path, monkeypatch) -> None:
 
     importlib.reload(chemtabextract)
     assert not (tmp_path / "tde_log.txt").exists()
+
+
+class TestInputError:
+    """Tests for the InputError exception class."""
+
+    def test_input_error_stores_message(self) -> None:
+        """InputError should store its argument on the .message attribute."""
+        from chemtabextract.exceptions import InputError
+
+        err = InputError("bad input")
+        assert err.message == "bad input"
+
+    def test_input_error_is_catchable_as_tde_error(self) -> None:
+        """InputError should be catchable via its TDEError base class."""
+        from chemtabextract.exceptions import InputError, TDEError
+
+        with pytest.raises(TDEError):
+            raise InputError("bad input")
+
+    def test_input_error_is_catchable_as_base_exception(self) -> None:
+        """InputError should be catchable as a plain Exception."""
+        from chemtabextract.exceptions import InputError
+
+        with pytest.raises(Exception):
+            raise InputError("bad input")
+
+
+class TestMIPSError:
+    """Tests for the MIPSError exception class."""
+
+    def test_mips_error_stores_message(self) -> None:
+        """MIPSError should store its argument on the .message attribute."""
+        from chemtabextract.exceptions import MIPSError
+
+        err = MIPSError("algorithm failed")
+        assert err.message == "algorithm failed"
+
+    def test_mips_error_is_catchable_as_tde_error(self) -> None:
+        """MIPSError should be catchable via its TDEError base class."""
+        from chemtabextract.exceptions import MIPSError, TDEError
+
+        with pytest.raises(TDEError):
+            raise MIPSError("algorithm failed")
+
+    def test_mips_error_is_catchable_as_base_exception(self) -> None:
+        """MIPSError should be catchable as a plain Exception."""
+        from chemtabextract.exceptions import MIPSError
+
+        with pytest.raises(Exception):
+            raise MIPSError("algorithm failed")
