@@ -69,10 +69,10 @@ class TestReadFileReturnType:
         result = read_file(str(single_table_html))
         assert isinstance(result, np.ndarray)
 
-    def test_array_dtype_is_u60(self, single_table_html: Path) -> None:
-        """Array dtype should be '<U60', consistent with the CSV and list input paths."""
+    def test_array_dtype_is_unicode_string(self, single_table_html: Path) -> None:
+        """Array dtype should be a fixed-width Unicode string dtype."""
         result = read_file(str(single_table_html))
-        assert result.dtype == np.dtype("<U60")
+        assert np.issubdtype(result.dtype, np.str_)
 
 
 class TestReadFileSingleTable:

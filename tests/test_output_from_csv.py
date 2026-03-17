@@ -34,14 +34,9 @@ _ROUND_TRIP_FAILURES: dict[str, str] = {
         'source uses explicit quoted-empty fields ("",""); '
         "csv.writer QUOTE_MINIMAL writes bare empty (,,)"
     ),
-    "table_example7.csv": (
-        "source uses explicit quoted-empty fields; csv.writer writes bare empty"
-    ),
     "te_01.csv": ("source uses explicit quoted-empty fields; csv.writer writes bare empty"),
     "te_02.csv": ("source uses explicit quoted-empty fields; csv.writer writes bare empty"),
     "te_03.csv": ("source uses explicit quoted-empty fields; csv.writer writes bare empty"),
-    "te_04.csv": ("source uses explicit quoted-empty fields; csv.writer writes bare empty"),
-    "te_05.csv": ("source uses explicit quoted-empty fields; csv.writer writes bare empty"),
 }
 
 _ALL_CSV = sorted(p.name for p in _DATA.glob("*.csv"))

@@ -16,7 +16,7 @@ def test_default_config():
     table.print()
     pre_cleaned_table = [
         [
-            "Pupils in comprehensive schools and with leaving certificate",
+            "Pupils in comprehensive schools and with leaving certificates from comprehensive schools 1990-2009",
             "",
             "",
             "",
@@ -146,15 +146,15 @@ def test_specific_config():
     table.print()
     pre_cleaned_table = [
         [
-            "Pupils in comprehensive schools and with leaving certificate",
-            "Pupils in comprehensive schools and with leaving certificate",
-            "Pupils in comprehensive schools and with leaving certificate",
-            "Pupils in comprehensive schools and with leaving certificate",
-            "Pupils in comprehensive schools and with leaving certificate",
-            "Pupils in comprehensive schools and with leaving certificate",
-            "Pupils in comprehensive schools and with leaving certificate",
-            "Pupils in comprehensive schools and with leaving certificate",
-            "Pupils in comprehensive schools and with leaving certificate",
+            "Pupils in comprehensive schools and with leaving certificates from comprehensive schools 1990-2009",
+            "Pupils in comprehensive schools and with leaving certificates from comprehensive schools 1990-2009",
+            "Pupils in comprehensive schools and with leaving certificates from comprehensive schools 1990-2009",
+            "Pupils in comprehensive schools and with leaving certificates from comprehensive schools 1990-2009",
+            "Pupils in comprehensive schools and with leaving certificates from comprehensive schools 1990-2009",
+            "Pupils in comprehensive schools and with leaving certificates from comprehensive schools 1990-2009",
+            "Pupils in comprehensive schools and with leaving certificates from comprehensive schools 1990-2009",
+            "Pupils in comprehensive schools and with leaving certificates from comprehensive schools 1990-2009",
+            "Pupils in comprehensive schools and with leaving certificates from comprehensive schools 1990-2009",
         ],
         [
             "Year",
@@ -197,7 +197,7 @@ def test_specific_config():
             "4869",
             ["1990"],
             [
-                "Pupils in comprehensive schools and with leaving certificate",
+                "Pupils in comprehensive schools and with leaving certificates from comprehensive schools 1990-2009",
                 "School",
                 "School",
                 "School",
@@ -207,7 +207,7 @@ def test_specific_config():
             "2189",
             ["1990"],
             [
-                "Pupils in comprehensive schools and with leaving certificate",
+                "Pupils in comprehensive schools and with leaving certificates from comprehensive schools 1990-2009",
                 "Pupils",
                 "Pre-primary",
                 "Pre-primary",
@@ -217,7 +217,7 @@ def test_specific_config():
             "389410",
             ["1990"],
             [
-                "Pupils in comprehensive schools and with leaving certificate",
+                "Pupils in comprehensive schools and with leaving certificates from comprehensive schools 1990-2009",
                 "Pupils",
                 "Grades",
                 "6 Jan",
@@ -227,7 +227,7 @@ def test_specific_config():
             "197719",
             ["1990"],
             [
-                "Pupils in comprehensive schools and with leaving certificate",
+                "Pupils in comprehensive schools and with leaving certificates from comprehensive schools 1990-2009",
                 "Pupils",
                 "Grades",
                 "9 Jul",
@@ -237,7 +237,7 @@ def test_specific_config():
             "NoValue",
             ["1990"],
             [
-                "Pupils in comprehensive schools and with leaving certificate",
+                "Pupils in comprehensive schools and with leaving certificates from comprehensive schools 1990-2009",
                 "Pupils",
                 "Additional",
                 "Additional",
@@ -247,7 +247,7 @@ def test_specific_config():
             "592920",
             ["1990"],
             [
-                "Pupils in comprehensive schools and with leaving certificate",
+                "Pupils in comprehensive schools and with leaving certificates from comprehensive schools 1990-2009",
                 "Pupils",
                 "Total",
                 "Total",
@@ -257,7 +257,7 @@ def test_specific_config():
             "67427",
             ["1990"],
             [
-                "Pupils in comprehensive schools and with leaving certificate",
+                "Pupils in comprehensive schools and with leaving certificates from comprehensive schools 1990-2009",
                 "Grade 1",
                 "Grade 1",
                 "Grade 1",
@@ -267,7 +267,7 @@ def test_specific_config():
             "61054",
             ["1990"],
             [
-                "Pupils in comprehensive schools and with leaving certificate",
+                "Pupils in comprehensive schools and with leaving certificates from comprehensive schools 1990-2009",
                 "Leaving certificates",
                 "Leaving certificates",
                 "Leaving certificates",
@@ -277,7 +277,7 @@ def test_specific_config():
             "4861",
             ["1991"],
             [
-                "Pupils in comprehensive schools and with leaving certificate",
+                "Pupils in comprehensive schools and with leaving certificates from comprehensive schools 1990-2009",
                 "School",
                 "School",
                 "School",
@@ -287,7 +287,7 @@ def test_specific_config():
             "2181",
             ["1991"],
             [
-                "Pupils in comprehensive schools and with leaving certificate",
+                "Pupils in comprehensive schools and with leaving certificates from comprehensive schools 1990-2009",
                 "Pupils",
                 "Pre-primary",
                 "Pre-primary",
@@ -297,7 +297,7 @@ def test_specific_config():
             "389411",
             ["1991"],
             [
-                "Pupils in comprehensive schools and with leaving certificate",
+                "Pupils in comprehensive schools and with leaving certificates from comprehensive schools 1990-2009",
                 "Pupils",
                 "Grades",
                 "6 Jan",
@@ -307,7 +307,7 @@ def test_specific_config():
             "197711",
             ["1991"],
             [
-                "Pupils in comprehensive schools and with leaving certificate",
+                "Pupils in comprehensive schools and with leaving certificates from comprehensive schools 1990-2009",
                 "Pupils",
                 "Grades",
                 "9 Jul",
@@ -317,7 +317,7 @@ def test_specific_config():
             "3601",
             ["1991"],
             [
-                "Pupils in comprehensive schools and with leaving certificate",
+                "Pupils in comprehensive schools and with leaving certificates from comprehensive schools 1990-2009",
                 "Pupils",
                 "Additional",
                 "Additional",
@@ -327,7 +327,7 @@ def test_specific_config():
             "592921",
             ["1991"],
             [
-                "Pupils in comprehensive schools and with leaving certificate",
+                "Pupils in comprehensive schools and with leaving certificates from comprehensive schools 1990-2009",
                 "Pupils",
                 "Total",
                 "Total",
@@ -337,7 +337,7 @@ def test_specific_config():
             "67421",
             ["1991"],
             [
-                "Pupils in comprehensive schools and with leaving certificate",
+                "Pupils in comprehensive schools and with leaving certificates from comprehensive schools 1990-2009",
                 "Grade 1",
                 "Grade 1",
                 "Grade 1",
@@ -347,7 +347,7 @@ def test_specific_config():
             "NoValue",
             ["1991"],
             [
-                "Pupils in comprehensive schools and with leaving certificate",
+                "Pupils in comprehensive schools and with leaving certificates from comprehensive schools 1990-2009",
                 "Leaving certificates",
                 "Leaving certificates",
                 "Leaving certificates",
