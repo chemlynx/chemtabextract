@@ -26,11 +26,11 @@ After installation and calibration, `pre-commit run --all-files` SHALL exit with
 - **THEN** `tool.ruff.line-length` equals `100` and `tool.ruff.lint.select` includes `"E"`, `"F"`, `"W"`, `"I"`
 
 ### Requirement: mypy tool config present in pyproject.toml
-`pyproject.toml` SHALL contain a `[tool.mypy]` section with `python_version = "3.13"`, `ignore_missing_imports = true`, and per-module overrides ignoring errors in `_mips.py` and `_utils.py`.
+`pyproject.toml` SHALL contain a `[tool.mypy]` section with `python_version = "3.13"`, `ignore_missing_imports = true`, and a per-module override ignoring errors in `_mips.py`. `_utils.py` is type-clean and does not require an override.
 
 #### Scenario: mypy config present
 - **WHEN** `pyproject.toml` is parsed
-- **THEN** `tool.mypy.ignore_missing_imports` is `true` and overrides for `_mips` and `_utils` modules exist
+- **THEN** `tool.mypy.ignore_missing_imports` is `true` and an override for `_mips` exists
 
 ### Requirement: bandit tool config present in pyproject.toml
 `pyproject.toml` SHALL contain a `[tool.bandit]` section with `exclude_dirs = ["tests"]`.
