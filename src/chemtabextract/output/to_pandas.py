@@ -7,10 +7,10 @@ import pandas as pd
 
 def to_pandas(table):
     """
-    Creates a `Pandas <http://pandas.pydata.org/>`_ `DataFrame` object from a :class:`~tabledataextractor.table.table.Table` object.
+    Creates a `Pandas <http://pandas.pydata.org/>`_ `DataFrame` object from a :class:`~chemtabextract.table.table.Table` object.
 
     :param table: Input table
-    :type table: ~tabledataextractor.table.table.Table
+    :type table: ~chemtabextract.table.table.Table
     :return: :class:`pandas.DataFrame`
     """
     index_row = pd.MultiIndex.from_arrays(table.row_header.T)

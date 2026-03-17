@@ -40,7 +40,7 @@ log = logging.getLogger(__name__)
 
 class Table:
     """
-    Main `TableDataExtractor` object that includes the raw (input), cleaned (processes) and labelled tables.
+    Main `chemtabextract` object that includes the raw (input), cleaned (processes) and labelled tables.
     Represents the table input (.csv, .html, python list, url) in a highly standardized `category table` format,
     using the MIPS (*Minimum Indexing Point Search*) algorithm.
 
@@ -75,7 +75,7 @@ class Table:
     """
 
     def __init__(self, file_path, table_number=1, **kwargs):
-        """Runs required `TableDataExtractor` algorithms automatically upon initialization."""
+        """Runs required `chemtabextract` algorithms automatically upon initialization."""
         log.info(f'Initialization of table: "{file_path}"')
         self._file_path = file_path
         self._table_number = table_number
@@ -152,9 +152,9 @@ class Table:
     def footnotes(self):
         """
         List of footnotes in the table.
-        Each footnote is an instance of :class:`~tabledataextractor.table.footnotes.Footnote`.
+        Each footnote is an instance of :class:`~chemtabextract.table.footnotes.Footnote`.
 
-        :type: list[~tabledataextractor.table.footnotes.Footnote]
+        :type: list[~chemtabextract.table.footnotes.Footnote]
         """
         return self._footnotes
 
@@ -171,9 +171,9 @@ class Table:
     @property
     def history(self):
         """
-        Indicates which algorithms have been applied to the table by TableDataExtractor.
+        Indicates which algorithms have been applied to the table by chemtabextract.
 
-        :type: ~tabledataextractor.table.history.History
+        :type: ~chemtabextract.table.history.History
         """
         return self._history
 
@@ -218,7 +218,7 @@ class Table:
     @property
     def configs(self):
         """
-        Configuration keywords set at the creation of the :class:`~tabledataextractor.table.table.Table` instance.
+        Configuration keywords set at the creation of the :class:`~chemtabextract.table.table.Table` instance.
 
         :type: dict
         """
@@ -227,7 +227,7 @@ class Table:
     @property
     def raw_table(self):
         """
-        Input table, as provided to `TableDataExtractor`.
+        Input table, as provided to `chemtabextract`.
 
         :type: numpy.array
         """
@@ -346,9 +346,9 @@ class Table:
     def subtables(self):
         """
         List of all subtables.
-        Each subtable is an instance of :class:`~tabledataextractor.table.table.Table`.
+        Each subtable is an instance of :class:`~chemtabextract.table.table.Table`.
 
-        :type: list[~tabledataextractor.table.table.Table]
+        :type: list[~chemtabextract.table.table.Table]
         """
         tables = []
         g = split_table(self)
@@ -372,7 +372,7 @@ class Table:
         stub header). The `row_categories` table can be used if the row categories want to be analyzed as `data`
         themselves, which can occur if the header regions of the original table intentionally have duplicate elements.
 
-        :type: ~tabledataextractor.table.table.TrivialTable
+        :type: ~chemtabextract.table.table.TrivialTable
         """
         # this outer try statement is necessary to catch some weird errors with empty category tables
         try:
@@ -456,7 +456,7 @@ class Table:
 
     def print(self):
         """
-        Prints the `raw table` (input), `cleaned table` (processed by `TableDataExtractor`) and `labels`
+        Prints the `raw table` (input), `cleaned table` (processed by `chemtabextract`) and `labels`
         (regions of the table) nicely.
         """
         log.debug(f"Printing table: {self._file_path}")

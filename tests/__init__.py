@@ -1,5 +1,5 @@
 """
-tabledataextractor.tests
+chemtabextract.tests
 
 Tests package.
 

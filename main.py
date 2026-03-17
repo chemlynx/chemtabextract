@@ -1,5 +1,5 @@
 def main():
-    print("Hello from tabledataextractor!")
+    print("Hello from chemtabextract!")
 
 
 if __name__ == "__main__":

@@ -24,7 +24,7 @@ def find_title_row(table_object):
     Searches for the topmost non-empty row.
 
     :param table_object: Input Table object
-    :type table_object: ~tabledataextractor.table.table.Table
+    :type table_object: ~chemtabextract.table.table.Table
     :return: int
     """
     for row_index, empty_row in enumerate(table_object.pre_cleaned_table_empty):
@@ -37,7 +37,7 @@ def find_note_cells(table_object, labels_table):
     Searches for all non-empty cells that have not been labelled differently.
 
     :param table_object: Input Table object
-    :type table_object: ~tabledataextractor.table.table.Table
+    :type table_object: ~chemtabextract.table.table.Table
     :param labels_table: table that holds all the labels
     :type labels_table: Numpy array
     :return: Tuple
@@ -70,7 +70,7 @@ def prefix_duplicate_labels(table_object, array):
     The algorithm has been modified from Embley et al., *DOI: 10.1007/s10032-016-0259-1*.
 
     :param table_object: Input Table object
-    :type table_object: ~tabledataextractor.table.table.Table
+    :type table_object: ~chemtabextract.table.table.Table
     :param array: Table to use as input and to do the prefixing on
     :type array: Numpy array
     :return: Table with added rows/columns with prefixes, or, input table, if no prefixing was done
@@ -227,7 +227,7 @@ def duplicate_spanning_cells(table_object, array):
     Algorithm according to Nagy and Seth, 2016, in Procs. ICPR 2016, Cancun, Mexico.
 
     :param table_object: Input Table object
-    :type table_object: ~tabledataextractor.table.table.Table
+    :type table_object: ~chemtabextract.table.table.Table
     :param array: Table to use as input
     :type array: Numpy array
     :return: Array with spanning cells copied, if necessary. Alternatively, returns the original table.
@@ -330,7 +330,7 @@ def header_extension_up(table_object, cc1):
     in Procs. ICPR 2016, Cancun, Mexico.
 
     :param table_object: Input Table object
-    :type table_object: ~tabledataextractor.table.table.Table
+    :type table_object: ~chemtabextract.table.table.Table
     :param cc1: `CC1` critical cell
     :return: cc1_new
     """
@@ -394,7 +394,7 @@ def header_extension_down(table_object, cc1, cc2, cc4):
     For row-header expansion to the right, the whole stub header column above has to be empty.
 
     :param table_object: Input Table object
-    :type table_object: ~tabledataextractor.table.table.Table
+    :type table_object: ~chemtabextract.table.table.Table
     :param cc2: Critical cell `CC2`
     :type cc2: (int, int)
     :param cc1: Critical cell `CC1`

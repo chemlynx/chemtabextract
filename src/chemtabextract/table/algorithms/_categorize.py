@@ -40,14 +40,14 @@ def categorize_header(header):
 
 def split_table(table_object):
     """
-    Splits table into subtables. Yields :class:`~tabledataextractor.table.table.Table` objects.
+    Splits table into subtables. Yields :class:`~chemtabextract.table.table.Table` objects.
 
     Algorithm:
         If the stub header is repeated in the column header section the table is split up before
         the repeated element.
 
     :param table_object: Input Table object
-    :type table_object: ~tabledataextractor.table.table.Table
+    :type table_object: ~chemtabextract.table.table.Table
     """
 
     # first, the column header
@@ -105,9 +105,9 @@ def find_row_header_table(category_table, stub_header):
     """
     Constructs a Table from the row categories of the original table.
 
-    :param category_table: ~tabledataextractor.table.table.Table.category_table
+    :param category_table: ~chemtabextract.table.table.Table.category_table
     :type category_table: list
-    :param stub_header: ~tabledataextractor.table.table.Table.stub_header
+    :param stub_header: ~chemtabextract.table.table.Table.stub_header
     :type stub_header: numpy.ndarray
     :return: list
     """

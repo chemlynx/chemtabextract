@@ -1,5 +1,5 @@
 """
-tabledataextractor.tests.test_table_table.py
+chemtabextract.tests.test_table_table.py
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Test main table object.
 These tests depend on the input from csv working properly.

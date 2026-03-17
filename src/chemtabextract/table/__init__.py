@@ -1,5 +1,5 @@
 """
-tabledataextractor.table
+chemtabextract.table
 
 Table processing.
 

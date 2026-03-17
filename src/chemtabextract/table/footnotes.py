@@ -22,7 +22,7 @@ class Footnote:
     Will construct the footnote and find all associated elements.
 
     :param table: table to work on
-    :type table: ~tabledataextractor.table.table.Table
+    :type table: ~chemtabextract.table.table.Table
     :param prefix: Prefix that has been identified as footnote prefix
     :type prefix: str
     :param prefix_cell: Index of the cell containing the associated prefix
@@ -157,7 +157,7 @@ class Footnote:
 
 def find_footnotes(table_object):
     r"""
-    Finds a footnote and yields a :class:`~tabledataextractor.table.footnotes.Footnote` object with all the appropriate properties.
+    Finds a footnote and yields a :class:`~chemtabextract.table.footnotes.Footnote` object with all the appropriate properties.
     A footnote is defined with::
 
         FNprefix  = \*, #, ., o, †; possibly followed by "." or ")"
@@ -165,7 +165,7 @@ def find_footnotes(table_object):
     A search is performed only below the data region.
 
     :param table_object: Input Table object
-    :type table_object: ~tabledataextractor.table.table.Table
+    :type table_object: ~chemtabextract.table.table.Table
     """
     #: finds a footnote cell that possibly contains some text as well
     fn_parser = CellParser(r"^([*#\.o†\da-z][\.\)]?)(?!\d)\s?(([\w\[\]\s\:]+)?\.?)\s?$")

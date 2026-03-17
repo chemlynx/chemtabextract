@@ -1,5 +1,5 @@
 """
-tabledataextractor.output
+chemtabextract.output
 
 Methods for output, interfacing with databases and parsers.
 

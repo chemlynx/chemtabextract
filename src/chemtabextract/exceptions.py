@@ -1,11 +1,11 @@
 """
-Exceptions defined for TableDataExtractor.
+Exceptions defined for chemtabextract.
 """
 
 
 class TDEError(Exception):
     """
-    Base class for exceptions in TableDataExtractor.
+    Base class for exceptions in chemtabextract.
     """
 
 

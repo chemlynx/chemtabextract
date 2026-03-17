@@ -13,7 +13,7 @@ log = logging.getLogger(__name__)
 
 class History:
     """
-    Stores `True`/`False` for each property, indicating if a method has been used on the particular :class:`~tabledataextractor.table.table.Table` instance.
+    Stores `True`/`False` for each property, indicating if a method has been used on the particular :class:`~chemtabextract.table.table.Table` instance.
     """
 
     def __init__(self):

@@ -21,7 +21,7 @@ def find_cc4(table_object):
     (which usually only have one or two non-empty cells).
 
     :param table_object: Input Table object
-    :type table_object: ~tabledataextractor.table.table.Table
+    :type table_object: ~chemtabextract.table.table.Table
     :return: cc4
     """
     # searching from the bottom of original table:
@@ -46,7 +46,7 @@ def find_cc1_cc2(table_object, cc4, array):
     every data cell.
 
     :param table_object: Input Table object
-    :type table_object: ~tabledataextractor.table.table.Table
+    :type table_object: ~chemtabextract.table.table.Table
     :param cc4: Position of `CC4` cell found with ``find_cc4()``
     :param array: table to search for `CC1` and `CC2`
     :type array: numpy array
@@ -322,7 +322,7 @@ def find_cc3(table_object, cc2):
             * this can be chosen my commenting/uncommenting the code within this function
 
     :param table_object: Input Table object
-    :type table_object: ~tabledataextractor.table.table.Table
+    :type table_object: ~chemtabextract.table.table.Table
     :param cc2: Tuple, position of `CC2` cell found with find_cc1_cc2()
     :type cc2: (int,int)
     :return: cc3
