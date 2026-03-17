@@ -25,7 +25,7 @@ except ImportError:
 log = logging.getLogger(__name__)
 
 
-def makearray(html_table):
+def makearray(html_table) -> np.ndarray:
     """
     Creates a numpy array from an `.html` file, taking `rowspan` and `colspan` into account.
 
@@ -133,8 +133,20 @@ def makearray(html_table):
     return array.astype(f"<U{max(max_len, 1)}")
 
 
-def read_file(file_path, table_number=1):
-    """Reads an .html file and returns a numpy array."""
+def read_file(file_path: str, table_number: int = 1) -> np.ndarray:
+    """Read an HTML file and return the specified table as a numpy array.
+
+    Args:
+        file_path: Path to the ``.html`` file.
+        table_number: 1-based index of the table to read.  The first table on
+            the page is ``1`` (the default).
+
+    Returns:
+        The table as a numpy array of Unicode strings.
+
+    Raises:
+        InputError: When *table_number* exceeds the number of tables in the file.
+    """
     with open(file_path, encoding="UTF-8") as file:
         html_soup = BeautifulSoup(file, features="lxml")
     try:
@@ -173,14 +185,23 @@ def configure_selenium(browser="Firefox", geckodriver_path=None):
     return None
 
 
-def read_url(url, table_number=1):
-    """
-    Reads in a table from an URL and returns a numpy array. Will try `Requests <http://docs.python-requests.org/en/master/>`_ first. If it doesn't succeed, `Selenium <https://selenium-python.readthedocs.io/>`_ will be used.
+def read_url(url: str, table_number: int = 1) -> np.ndarray:
+    """Fetch a table from a URL and return it as a numpy array.
 
-    :param url: Url of the page where the table is located
-    :type url: str
-    :param table_number: Number of Table on the web page.
-    :type table_number: int
+    Tries the ``requests`` library first; falls back to Selenium if the initial
+    request fails (requires the ``[web]`` optional extra).
+
+    Args:
+        url: URL of the page containing the table.
+        table_number: 1-based index of the table on the page (default ``1``).
+
+    Returns:
+        The table as a numpy array of Unicode strings.
+
+    Raises:
+        TypeError: When *table_number* is not an integer.
+        InputError: When *table_number* is out of range, or when ``requests``
+            fails and Selenium is not installed.
     """
 
     if not isinstance(table_number, int):

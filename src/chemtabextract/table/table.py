@@ -75,7 +75,7 @@ class Table:
     :type table_number: int
     """
 
-    def __init__(self, file_path, table_number=1, **kwargs):
+    def __init__(self, file_path: str | list, table_number: int = 1, **kwargs) -> None:
         """Runs required `chemtabextract` algorithms automatically upon initialization."""
         log.info(f'Initialization of table: "{file_path}"')
         self._file_path = file_path
@@ -91,7 +91,7 @@ class Table:
         self._analyze_table()
 
     @property
-    def _default_configs(self):
+    def _default_configs(self) -> dict:
         return {
             "use_title_row": True,
             "use_prefixing": True,
@@ -232,11 +232,11 @@ class Table:
         return self._history
 
     @property
-    def labels(self):
+    def labels(self) -> np.ndarray:
         """
         Cell labels.
 
-        :type: list
+        :type: numpy.ndarray
         """
         temp = np.empty_like(self._pre_cleaned_table, dtype="<U60")
         temp[:, :] = "/"
@@ -270,7 +270,7 @@ class Table:
         return temp
 
     @property
-    def configs(self):
+    def configs(self) -> dict:
         """
         Configuration keywords set at the creation of the :class:`~chemtabextract.table.table.Table` instance.
         Returns a copy — mutating the returned dict has no effect on the table.
@@ -309,7 +309,7 @@ class Table:
         return self._raw_table_cache.T
 
     @property
-    def pre_cleaned_table(self):
+    def pre_cleaned_table(self) -> np.ndarray:
         """
         Cleaned-up table.
         This table is used for labelling the table regions, finding data-cells and building the category table.
@@ -319,7 +319,7 @@ class Table:
         return self._pre_cleaned_table
 
     @property
-    def pre_cleaned_table_empty(self):
+    def pre_cleaned_table_empty(self) -> np.ndarray:
         """
         Mask array with `True` for all empty cells of the ``pre_cleaned_table``.
 
@@ -328,7 +328,7 @@ class Table:
         return empty_cells(self._pre_cleaned_table)
 
     @property
-    def category_table(self):
+    def category_table(self) -> list:
         """
         Standardized table, where each row corresponds to a single data point of the original table.
         The columns are the row and column categories where the data point belongs to.
@@ -342,7 +342,7 @@ class Table:
             raise MIPSError(msg)
 
     @property
-    def col_header(self):
+    def col_header(self) -> np.ndarray:
         """
         Column header of the table.
 
@@ -357,7 +357,7 @@ class Table:
             raise MIPSError(msg)
 
     @property
-    def row_header(self):
+    def row_header(self) -> np.ndarray:
         """
         Row header of the table.
 
@@ -372,7 +372,7 @@ class Table:
             raise MIPSError(msg)
 
     @property
-    def stub_header(self):
+    def stub_header(self) -> np.ndarray:
         """
         Stub header of the table.
 
@@ -387,7 +387,7 @@ class Table:
             raise MIPSError(msg)
 
     @property
-    def data(self):
+    def data(self) -> np.ndarray:
         """
         Data region of the table.
 
@@ -405,7 +405,7 @@ class Table:
             raise MIPSError(msg)
 
     @property
-    def subtables(self):
+    def subtables(self) -> list:
         """
         List of all subtables.
         Each subtable is an instance of :class:`~chemtabextract.table.table.Table`.
@@ -600,11 +600,11 @@ class TrivialTable(Table):
 
     """
 
-    def __init__(self, file_path, table_number=1, **kwargs):
+    def __init__(self, file_path: str | list, table_number: int = 1, **kwargs) -> None:
         super().__init__(file_path=file_path, table_number=table_number, **kwargs)
 
     @property
-    def _default_configs(self):
+    def _default_configs(self) -> dict:
         return {
             "standardize_empty_data": False,
             "clean_row_header": False,

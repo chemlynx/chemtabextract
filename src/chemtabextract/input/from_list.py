@@ -11,13 +11,17 @@ log = logging.getLogger(__name__)
 _TRUNCATION_WARNING_THRESHOLD = 200
 
 
-def read(plist):
-    """
-    Creates a numpy array from a Python list. Works if rows are of different length.
+def read(plist: list) -> np.ndarray:
+    """Create a numpy array from a Python list.
 
-    :param plist: Input List
-    :type plist: list
-    :return: numpy.ndarray
+    Rows of different lengths are padded with ``None`` to match the longest row.
+
+    Args:
+        plist: Input list of rows; each row is itself a list of cell values.
+
+    Returns:
+        The table as a numpy array of Unicode strings with a dtype wide enough
+        to hold all cell values without truncation.
     """
     length = len(sorted(plist, key=len, reverse=True)[0])
     padded = [row + [None] * (length - len(row)) for row in plist]

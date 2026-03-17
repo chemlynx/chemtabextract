@@ -16,7 +16,7 @@ class History:
     Stores `True`/`False` for each property, indicating if a method has been used on the particular :class:`~chemtabextract.table.table.Table` instance.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         self._title_row_removed = False
         self._prefixing_performed = False
         self._prefixed_rows = False
@@ -28,27 +28,27 @@ class History:
         log.debug("History() object created.")
 
     @property
-    def title_row_removed(self):
+    def title_row_removed(self) -> bool:
         """Indicates whether a title row has been removed from the table."""
         return self._title_row_removed
 
     @property
-    def prefixing_performed(self):
+    def prefixing_performed(self) -> bool:
         """Indicates whether prefixing has been performed on the table."""
         return self._prefixing_performed
 
     @property
-    def prefixed_rows(self):
+    def prefixed_rows(self) -> bool:
         """Indicates whether prefixing has been performed on the rows (left side)."""
         return self._prefixed_rows
 
     @property
-    def footnotes_copied(self):
+    def footnotes_copied(self) -> bool:
         """Indicates whether footnotes have been copied into the table cells."""
         return self._footnotes_copied
 
     @property
-    def spanning_cells_extended(self):
+    def spanning_cells_extended(self) -> bool:
         """
         Indicates whether the content of cells has been duplicated into neighbouring cells,
         in case of cells that are merged cells (spanning cells).
@@ -56,19 +56,19 @@ class History:
         return self._spanning_cells_extended
 
     @property
-    def header_extended_up(self):
+    def header_extended_up(self) -> bool:
         """Indicates whether the header has been extended upwards, beyond the result obtained by the MIPS
         (*Minimum Indexing Point Search*) algorithm."""
         return self._header_extended_up
 
     @property
-    def header_extended_down(self):
+    def header_extended_down(self) -> bool:
         """Indicates whether the header has been extended downwards, beyond the result obtained by the MIPS
         (*Minimum Indexing Point Search*) algorithm."""
         return self._header_extended_down
 
     @property
-    def table_transposed(self):
+    def table_transposed(self) -> bool:
         """Indicates whether the table has been transposed."""
         return self._table_transposed
 

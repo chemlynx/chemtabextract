@@ -6,10 +6,12 @@ import csv
 import logging
 from pathlib import Path
 
+import numpy as np
+
 log = logging.getLogger(__name__)
 
 
-def write_to_csv(table, file_path):
+def write_to_csv(table: np.ndarray, file_path: str | Path) -> None:
     """
     Writes a numpy array table to a .csv file.
     Overrides existing files.

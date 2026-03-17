@@ -2,10 +2,17 @@
 Outputs the table to a Pandas DataFrame.
 """
 
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 import pandas as pd
 
+if TYPE_CHECKING:
+    from chemtabextract.table.table import Table
 
-def to_pandas(table):
+
+def to_pandas(table: Table) -> pd.DataFrame:
     """
     Creates a `Pandas <http://pandas.pydata.org/>`_ `DataFrame` object from a :class:`~chemtabextract.table.table.Table` object.
 
@@ -19,7 +26,9 @@ def to_pandas(table):
     return df
 
 
-def find_multiindex_level(row_number, column_number, df):
+def find_multiindex_level(
+    row_number: int, column_number: int, df: pd.DataFrame
+) -> tuple[list, list]:
     """
     Helper for :func:`build_category_table` and :func:`print_category_table`.
 
@@ -50,7 +59,7 @@ def find_multiindex_level(row_number, column_number, df):
     return result_index, result_column
 
 
-def print_category_table(df):
+def print_category_table(df: pd.DataFrame) -> None:
     """
     Prints the category table to screen, from `Pandas DataFrame` input
 
@@ -73,7 +82,7 @@ def print_category_table(df):
             )
 
 
-def build_category_table(df):
+def build_category_table(df: pd.DataFrame) -> list:
     """
     Builds the category table in form of a Python list, from `Pandas DataFrame` input
 

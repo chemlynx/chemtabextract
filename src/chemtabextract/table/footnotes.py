@@ -5,12 +5,19 @@ Footnote handling.
 
 """
 
+from __future__ import annotations
+
 import logging
 import re
+from collections.abc import Generator
+from typing import TYPE_CHECKING
 
 import numpy as np
 
 from .parse import CellParser
+
+if TYPE_CHECKING:
+    from chemtabextract.table.table import Table
 
 log = logging.getLogger(__name__)
 
@@ -31,7 +38,7 @@ class Footnote:
     :type text: str
     """
 
-    def __init__(self, table, prefix, prefix_cell, text):
+    def __init__(self, table: Table, prefix: str, prefix_cell: tuple, text: str) -> None:
         self._table = table
         self.pre_cleaned_table = np.copy(self._table.pre_cleaned_table)
 
@@ -155,7 +162,7 @@ class Footnote:
         )
 
 
-def find_footnotes(table_object):
+def find_footnotes(table_object: Table) -> Generator:
     r"""
     Finds a footnote and yields a :class:`~chemtabextract.table.footnotes.Footnote` object with all the appropriate properties.
     A footnote is defined with::

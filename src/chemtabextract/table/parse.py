@@ -2,8 +2,11 @@
 Tools for parsing the table based on regular expressions.
 """
 
+from __future__ import annotations
+
 import logging
 import re
+from collections.abc import Generator
 
 import numpy as np
 
@@ -17,12 +20,12 @@ class CellParser:
 
     """
 
-    def __init__(self, pattern):
+    def __init__(self, pattern: str) -> None:
         log.debug(f'Initialization of CellParser with regex pattern: "{pattern}"')
         assert isinstance(pattern, str)
         self.pattern = pattern
 
-    def parse(self, table, method="match"):
+    def parse(self, table: np.ndarray, method: str = "match") -> Generator:
         """
         Inputs a table and yields a tuple with the index of the next matching cell, as well as the string that
         was matched.
@@ -64,7 +67,7 @@ class CellParser:
                 if result:
                     yield row_index, result.groups()
 
-    def cut(self, table, method="match"):
+    def cut(self, table: np.ndarray, method: str = "match") -> Generator:
         """
         Inputs a 2-D table and yields a tuple with the index of the next matching cell,
         as well as a string that is obtained from the original string by cutting out the
@@ -93,7 +96,7 @@ class CellParser:
         for result in self.parse(table, method):
             yield result[0], result[1], prog.sub("", table[result[:2]])
 
-    def replace(self, table, repl, method="match"):
+    def replace(self, table: np.ndarray, repl: str, method: str = "match") -> Generator:
         """
         Inputs a table and yields a tuple with the index of the next matching cell, as well as a string
         that is obtained from the original string by cutting out the match string and replacing it with another string.
@@ -123,11 +126,11 @@ class StringParser:
 
     """
 
-    def __init__(self, pattern):
+    def __init__(self, pattern: str) -> None:
         assert isinstance(pattern, str)
         self.pattern = pattern
 
-    def parse(self, string, method="match"):
+    def parse(self, string: str, method: str = "match") -> bool:
         """
         Inputs a string and returns `True` if pattern matches.
 
@@ -155,7 +158,7 @@ class StringParser:
         else:
             return False
 
-    def cut(self, string):
+    def cut(self, string: str) -> str:
         """
         Inputs a string and returns the same string with the pattern cut out
 

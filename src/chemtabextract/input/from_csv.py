@@ -12,13 +12,16 @@ log = logging.getLogger(__name__)
 _TRUNCATION_WARNING_THRESHOLD = 200
 
 
-def read(file_path):
-    """
-    :param file_path: Path to `.csv` input file
-    :type file_path: str
-    :return: numpy.ndarray
-    """
+def read(file_path: str) -> np.ndarray:
+    """Read a UTF-8 encoded CSV file and return the contents as a numpy array.
 
+    Args:
+        file_path: Path to the ``.csv`` input file.
+
+    Returns:
+        The table as a numpy array of Unicode strings with a dtype wide enough
+        to hold all cell values without truncation.
+    """
     with open(file_path, encoding="utf-8") as f:
         rows = [elem for elem in list(csv.reader(f)) if elem]
         n = len(rows[0])
