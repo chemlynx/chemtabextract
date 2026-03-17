@@ -293,16 +293,13 @@ def duplicate_spanning_cells(table_object, array):
         diff_row_length = len(temp2) - len(temp)
         diff_col_length = len(temp2.T) - len(temp.T)
     log.debug("Spanning cells. Attempt to run main MIPS algorithm.")
-    # disable title row temporarily
-    old_title_row_setting = table_object.configs["use_title_row"]
-    table_object.configs["use_title_row"] = False
+    # disable title row temporarily via the context manager so the live config is always restored
     try:
-        cc1, cc2 = find_cc1_cc2(table_object, find_cc4(table_object), temp2)
+        with table_object._override_config("use_title_row", False):
+            cc1, cc2 = find_cc1_cc2(table_object, find_cc4(table_object), temp2)
     except (MIPSError, TypeError):
         log.error("Spanning cells update was not performed due to failure of MIPS algorithm.")
         return array
-    finally:
-        table_object.configs["use_title_row"] = old_title_row_setting
 
     updated = array.copy()
     # update the original table with values from the updated table if the cells are in the header regions

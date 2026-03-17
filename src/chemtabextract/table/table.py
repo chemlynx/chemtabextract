@@ -5,6 +5,7 @@ Represents a table in a highly standardized format.
 
 """
 
+import contextlib
 import logging
 
 import numpy as np
@@ -243,10 +244,29 @@ class Table:
     def configs(self):
         """
         Configuration keywords set at the creation of the :class:`~chemtabextract.table.table.Table` instance.
+        Returns a copy — mutating the returned dict has no effect on the table.
 
         :type: dict
         """
-        return self._configs
+        return self._configs.copy()
+
+    @contextlib.contextmanager
+    def _override_config(self, key: str, value: object):
+        """Temporarily override a single config key for the duration of a ``with`` block.
+
+        Args:
+            key: The config key to override.
+            value: The temporary value to use.
+
+        Yields:
+            Nothing. The override is active for the body of the ``with`` block.
+        """
+        original = self._configs[key]
+        self._configs[key] = value
+        try:
+            yield
+        finally:
+            self._configs[key] = original
 
     @property
     def raw_table(self) -> np.ndarray:
