@@ -168,11 +168,9 @@ class Table:
             self._cc2 = header_extension_down(self, self._cc1, self._cc2, self._cc4)
             log.debug(f"Header extension, new cc1 = {self._cc1}, new cc2 = {self._cc2}")
 
-        # check if critical cell `CC3` can be found
-        try:
-            _ = self._cc3
-        except MIPSError:
-            raise
+        # Validate CC3; MIPSError propagates naturally if it cannot be found.
+        # Prerequisite: self._cc2 must be set before this line.
+        _ = self._cc3
 
     @property
     def footnotes(self):
@@ -449,9 +447,10 @@ class Table:
 
     def _set_configs(self, **kwargs):
         """Sets the configuration parameters based on the user input."""
-        configs = self._default_configs
+        defaults = self._default_configs  # access once; property creates a new dict each time
+        configs = defaults
         for key, value in kwargs.items():
-            if key in self._default_configs:
+            if key in defaults:
                 configs[key] = value
             else:
                 msg = f'Keyword "{key}" does not exist.'

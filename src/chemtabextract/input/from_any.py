@@ -83,7 +83,7 @@ def create_table(name_key, table_number=1):
                 "Supported are: path to .html or .cvs file, URL or multidimensional python list object"
             )
             log.critical(msg)
-            raise TypeError(msg, str(name_key))
+            raise TypeError(f"{msg}: {name_key!r}")
 
     elif url(name_key):
         log.info(f"Url: {name_key}")
@@ -100,4 +100,4 @@ def create_table(name_key, table_number=1):
     else:
         msg = "Input is invalid. Supported are: path to .html or .cvs file, URL or multidimensional python list object"
         log.critical(msg)
-        raise TypeError(msg, str(name_key))
+        raise TypeError(f"{msg}: {name_key!r}")
