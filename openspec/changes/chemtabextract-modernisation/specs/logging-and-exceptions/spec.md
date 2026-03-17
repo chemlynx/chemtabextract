@@ -31,7 +31,7 @@
 - **THEN** the symbol is available
 
 ### Requirement: Dead function build_category_table removed from algorithms.py
-The dead `build_category_table` function that existed in `src/chemtabextract/table/algorithms.py` SHALL be removed. Note: a separate, live `build_category_table` function in `src/chemtabextract/output/to_pandas.py` is used by `table.py` and SHALL be retained.
+The dead `build_category_table` function that existed in `src/chemtabextract/table/algorithms/` SHALL be removed. Note: a separate, live `build_category_table` function in `src/chemtabextract/output/to_pandas.py` is used by `table.py` and SHALL be retained.
 
 #### Scenario: Dead copy absent from algorithms module
 - **WHEN** `src/chemtabextract/table/algorithms/` is grepped for `build_category_table`

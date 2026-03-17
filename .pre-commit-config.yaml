@@ -57,7 +57,7 @@ repos:
       - id: pytest-cov
         name: pytest with coverage
         language: system
-        entry: uv run pytest
+        entry: uv run python -m pytest
         args: [--cov=chemtabextract, --cov-fail-under=40, -q]
         pass_filenames: false
         stages: [pre-push]
