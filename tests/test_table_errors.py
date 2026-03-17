@@ -67,7 +67,7 @@ class TestTableOneDimensionalInput:
 class TestTableUnknownConfigKey:
     """Table should raise InputError for unrecognised keyword arguments."""
 
-    def test_unknown_kwarg_raises_input_error(self, table_example1: Table) -> None:
+    def test_unknown_kwarg_raises_input_error(self) -> None:
         """Passing an unrecognised config keyword should raise InputError."""
         src = "./tests/data/table_example1.csv"
         with pytest.raises(InputError):

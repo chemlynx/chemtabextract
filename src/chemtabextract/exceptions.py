@@ -15,6 +15,7 @@ class InputError(TDEError):
     """
 
     def __init__(self, message):
+        super().__init__(message)
         self.message = message
 
 
@@ -25,4 +26,5 @@ class MIPSError(TDEError):
     """
 
     def __init__(self, message):
+        super().__init__(message)
         self.message = message

@@ -7,7 +7,7 @@ Ed Beard (ejb207@cam.ac.uk)
 """
 
 import logging
-import os
+from pathlib import Path
 
 from chemtabextract import Table
 
@@ -15,7 +15,7 @@ log = logging.getLogger(__name__)
 
 
 def test_input_with_commas():
-    path = os.path.join(os.path.dirname(__file__), "data", "table_commas.csv")
+    path = Path(__file__).parent / "data" / "table_commas.csv"
     table = Table(path)
 
     table.print()
@@ -25,7 +25,7 @@ def test_input_with_commas():
 
 
 def test_input_with_double_quotes():
-    path = os.path.join(os.path.dirname(__file__), "data", "table_double_quotes.csv")
+    path = Path(__file__).parent / "data" / "table_double_quotes.csv"
     table = Table(path)
 
     assert table.raw_table[1][0] == 'N719 "cell'
@@ -33,7 +33,7 @@ def test_input_with_double_quotes():
 
 
 def test_input_with_single_quotes():
-    path = os.path.join(os.path.dirname(__file__), "data", "table_single_quotes.csv")
+    path = Path(__file__).parent / "data" / "table_single_quotes.csv"
     table = Table(path)
 
     assert table.raw_table[1][0] == "N719 'cell"
@@ -42,7 +42,7 @@ def test_input_with_single_quotes():
 
 
 def test_input_with_blank_lines():
-    path = os.path.join(os.path.dirname(__file__), "data", "table_empty_lines.csv")
+    path = Path(__file__).parent / "data" / "table_empty_lines.csv"
     table = Table(path)
 
     assert table.raw_table[0][6] == "PCE (η, %)"
@@ -51,7 +51,7 @@ def test_input_with_blank_lines():
 
 
 def test_table_with_broken_rows():
-    path = os.path.join(os.path.dirname(__file__), "data", "table_broken_row.csv")
+    path = Path(__file__).parent / "data" / "table_broken_row.csv"
     table = Table(path)
 
     assert len(table.category_table) == 10

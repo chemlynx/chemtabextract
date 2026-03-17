@@ -81,6 +81,7 @@ class Table:
         self._table_number = table_number
         self._configs = self._set_configs(**kwargs)
         self._history = History()
+        self._raw_table_cache: np.ndarray | None = None
         self._analyze_table()
 
     @property
@@ -97,10 +98,35 @@ class Table:
             "col_header": None,
         }
 
+    def _load_raw_table(self) -> np.ndarray:
+        """Fetch the raw table from source, validate shape, and return it.
+
+        Called once per :meth:`_analyze_table` run to populate
+        ``_raw_table_cache``; avoids repeated file I/O on every
+        ``raw_table`` access.
+
+        Returns:
+            Validated raw table as a numpy array.
+
+        Raises:
+            TypeError: Propagated from ``create_table`` if the input type is not supported.
+            InputError: If the table has only one row or column.
+        """
+        temp = from_any.create_table(self._file_path, self._table_number)
+        assert isinstance(temp, np.ndarray) and temp.dtype == "<U60"
+        if temp.ndim == 1:
+            msg = "Input table has only one row or column."
+            log.critical(msg)
+            raise InputError(msg)
+        return temp
+
     def _analyze_table(self):
         """
         Performs the analysis of the input table and is run automatically on initialization of the table object.
         """
+        # Fetch source data once; all raw_table accesses below use the cache.
+        self._raw_table_cache = self._load_raw_table()
+
         # check if input array is empty
         if empty_cells(self.raw_table).all():
             msg = "Input table is empty."
@@ -225,26 +251,15 @@ class Table:
         return self._configs
 
     @property
-    def raw_table(self):
+    def raw_table(self) -> np.ndarray:
         """
         Input table, as provided to `chemtabextract`.
 
         :type: numpy.array
         """
-        try:
-            temp = from_any.create_table(self._file_path, self._table_number)
-        except TypeError:
-            raise
-        else:
-            assert isinstance(temp, np.ndarray) and temp.dtype == "<U60"
-            if temp.ndim == 1:
-                msg = "Input table has only one row or column."
-                log.critical(msg)
-                raise InputError(msg)
-            if not self.history.table_transposed:
-                return temp
-            else:
-                return temp.T
+        if not self.history.table_transposed:
+            return self._raw_table_cache
+        return self._raw_table_cache.T
 
     @property
     def pre_cleaned_table(self):
@@ -273,7 +288,7 @@ class Table:
 
         :type: list
         """
-        if self._cc1 and self._cc2 and self._cc3 and self._cc4:
+        if all(x is not None for x in (self._cc1, self._cc2, self._cc3, self._cc4)):
             return build_category_table(to_pandas(self))
         else:
             msg = "Category table not built. Critical cells have not been found."
@@ -286,7 +301,7 @@ class Table:
 
         :type: numpy.ndarray
         """
-        if self._cc1 and self._cc2 and self._cc3 and self._cc4:
+        if all(x is not None for x in (self._cc1, self._cc2, self._cc3, self._cc4)):
             return self._pre_cleaned_table[
                 self._cc1[0] : self._cc2[0] + 1, self._cc3[1] : self._cc4[1] + 1
             ]
@@ -301,7 +316,7 @@ class Table:
 
         :type: numpy.ndarray
         """
-        if self._cc1 and self._cc2 and self._cc3 and self._cc4:
+        if all(x is not None for x in (self._cc1, self._cc2, self._cc3, self._cc4)):
             return self._pre_cleaned_table[
                 self._cc3[0] : self._cc4[0] + 1, self._cc1[1] : self._cc2[1] + 1
             ]
@@ -316,7 +331,7 @@ class Table:
 
         :type: numpy.ndarray
         """
-        if self._cc1 and self._cc2 and self._cc3 and self._cc4:
+        if all(x is not None for x in (self._cc1, self._cc2, self._cc3, self._cc4)):
             return self._pre_cleaned_table[
                 self._cc1[0] : self._cc2[0] + 1, self._cc1[1] : self._cc2[1] + 1
             ]
@@ -331,7 +346,7 @@ class Table:
 
         :type: numpy.ndarray
         """
-        if self._cc1 and self._cc2 and self._cc3 and self._cc4:
+        if all(x is not None for x in (self._cc1, self._cc2, self._cc3, self._cc4)):
             data_region = self._pre_cleaned_table[
                 self._cc3[0] : self._cc4[0] + 1, self._cc3[1] : self._cc4[1] + 1
             ]
@@ -361,7 +376,7 @@ class Table:
                     tables.append(Table(subtable))
                 except MIPSError as e:
                     log.exception(f"Subtable MIPS failure {e.args}")
-                    break
+                    continue
         return tables
 
     @property
@@ -539,6 +554,9 @@ class TrivialTable(Table):
         """
         Performs the analysis of the input table and is run automatically on initialization of the table object.
         """
+        # Fetch source data once (uses the shared caching mechanism from Table).
+        self._raw_table_cache = self._load_raw_table()
+
         # check if input array is empty
         if empty_cells(self.raw_table).all():
             msg = "Input table is empty."
@@ -630,7 +648,7 @@ class TrivialTable(Table):
     @property
     def _critical_cells(self):
         """Indicates if all the critical cells have been found."""
-        if self._cc1 and self._cc2 and self._cc3 and self._cc4:
+        if all(x is not None for x in (self._cc1, self._cc2, self._cc3, self._cc4)):
             return True
         else:
             return False

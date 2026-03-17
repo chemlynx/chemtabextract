@@ -7,7 +7,7 @@ Juraj Mavračić (jm2111@cam.ac.uk)
 """
 
 import logging
-import os
+from pathlib import Path
 
 import numpy as np
 
@@ -585,7 +585,7 @@ def _do_categorization_table(input_path, expected):
 
 
 def test_categorization_table_1():
-    input_path = os.path.join(os.path.dirname(__file__), "data", "table_example1.csv")
+    input_path = Path(__file__).parent / "data" / "table_example1.csv"
     expected = [
         ["4.64", ["This study"], ["Rutile", "a = b (A)"]],
         ["2.99", ["This study"], ["Rutile", "c (A)"]],

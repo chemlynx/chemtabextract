@@ -63,11 +63,15 @@ def create_table(name_key, table_number=1):
     Returns a numpy array with the raw table.
 
     :param name_key: Path to `.html` or `.cvs` file, `URL` or `python list` that is used as input
-    :type name_key: str | list
+    :type name_key: str | Path | list
     :param table_number: Number of the table that we want to input if there are several at the given address/path
     :type table_number: int
     :return: table as numpy.array
     """
+    # Normalise pathlib.Path objects so all downstream predicates and
+    # urllib.parse.urlparse() receive a plain string.
+    if isinstance(name_key, Path):
+        name_key = str(name_key)
 
     if isinstance(name_key, list):
         log.info("Input is list type.")

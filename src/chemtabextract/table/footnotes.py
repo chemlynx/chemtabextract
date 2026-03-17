@@ -58,7 +58,7 @@ class Footnote:
         for column_index in range(self.prefix_cell[1] + 1, np.shape(self.pre_cleaned_table)[1]):
             if not self._table.pre_cleaned_table_empty[self.prefix_cell[0], column_index]:
                 return self.prefix_cell[0], column_index
-            return None
+        return None
 
     def _find_text(self):
         """Finds the text associated with the prefix, only one cell can contain the text."""

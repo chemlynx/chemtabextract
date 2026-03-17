@@ -158,5 +158,5 @@ class StringParser:
         assert isinstance(string, str)
 
         prog = re.compile(self.pattern)
-        result = prog.sub(string, "")
+        result = prog.sub("", string)
         return result

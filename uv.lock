@@ -202,10 +202,11 @@ wheels = [
 
 [[package]]
 name = "chemtabextract"
-version = "0.8.0"
+version = "0.8.1"
 source = { editable = "." }
 dependencies = [
     { name = "beautifulsoup4" },
+    { name = "lxml" },
     { name = "numpy" },
     { name = "pandas" },
     { name = "prettytable" },
@@ -222,6 +223,7 @@ web = [
 dev = [
     { name = "bandit" },
     { name = "commitizen" },
+    { name = "lxml" },
     { name = "mypy" },
     { name = "pre-commit" },
     { name = "pytest" },
@@ -243,6 +245,7 @@ docs = [
 [package.metadata]
 requires-dist = [
     { name = "beautifulsoup4", specifier = ">=4.12.0" },
+    { name = "lxml", specifier = ">=4.9.0" },
     { name = "numpy", specifier = ">=1.16,<2.0.0" },
     { name = "pandas", specifier = ">=0.23.4" },
     { name = "prettytable", specifier = ">=0.7.2" },
@@ -256,6 +259,7 @@ provides-extras = ["web"]
 dev = [
     { name = "bandit", specifier = ">=1.8.0" },
     { name = "commitizen", specifier = ">=4.4.0" },
+    { name = "lxml", specifier = ">=6.0.2" },
     { name = "mypy", specifier = ">=1.14.0" },
     { name = "pre-commit", specifier = ">=4.0.0" },
     { name = "pytest", specifier = ">=8.0.0" },

@@ -120,32 +120,42 @@ def makearray(html_table):
 
 def read_file(file_path, table_number=1):
     """Reads an .html file and returns a numpy array."""
-    file = open(file_path, encoding="UTF-8")
-    html_soup = BeautifulSoup(file, features="lxml")
-    file.close()
-    html_table = html_soup.find_all("table")[table_number - 1]
+    with open(file_path, encoding="UTF-8") as file:
+        html_soup = BeautifulSoup(file, features="lxml")
+    try:
+        html_table = html_soup.find_all("table")[table_number - 1]
+    except IndexError:
+        raise InputError(f"table_number={table_number} is out of range")
     array = makearray(html_table)
     return array
 
 
-def configure_selenium(browser="Firefox"):
+def configure_selenium(browser="Firefox", geckodriver_path=None):
     """
-    Configuration for `Selenium <https://selenium-python.readthedocs.io/>`_. Sets the path to ``geckodriver.exe``
+    Configuration for `Selenium <https://selenium-python.readthedocs.io/>`_.
 
     :param browser: Which browser to use
     :type browser: str
+    :param geckodriver_path: Absolute path to the ``geckodriver`` executable.
+        If ``None``, geckodriver must be discoverable on the system ``PATH``
+        (Selenium ≥ 4 handles this automatically).
+    :type geckodriver_path: str | None
     :return: Selenium driver
 
     """
     if browser == "Firefox":
         options = FirefoxOptions()
-        options.headless = True
-        driver = webdriver.Firefox(
-            options=options, executable_path=r"C:\Users\juras\System\geckodriver\geckodriver.exe"
-        )
+        options.add_argument("--headless")
+        if geckodriver_path is not None:
+            from selenium.webdriver.firefox.service import Service as FirefoxService
+
+            driver = webdriver.Firefox(
+                options=options, service=FirefoxService(executable_path=geckodriver_path)
+            )
+        else:
+            driver = webdriver.Firefox(options=options)
         return driver
-    else:
-        return None
+    return None
 
 
 def read_url(url, table_number=1):
@@ -167,17 +177,23 @@ def read_url(url, table_number=1):
     try:
         html_file = requests.get(url)
         html_soup = BeautifulSoup(html_file.text, features="lxml")
-        html_table = html_soup.find_all("table")[table_number - 1]
+        try:
+            html_table = html_soup.find_all("table")[table_number - 1]
+        except IndexError:
+            raise InputError(f"table_number={table_number} is out of range")
         array = makearray(html_table)
         log.info("Package 'requests' was used.")
         return array
-    except Exception:
+    except InputError:
+        raise
+    except requests.exceptions.RequestException as exc:
+        log.warning(f"requests failed ({exc}); attempting Selenium fallback")
         if not _SELENIUM_AVAILABLE:
             raise InputError(
                 "requests failed to fetch the URL and selenium is not installed. "
                 "Install the optional web extra to enable JS-rendered URL support: "
                 "uv add chemtabextract[web]"
-            )
+            ) from exc
         driver = configure_selenium()
         driver.get(url)
         html_file = driver.page_source
