@@ -4,6 +4,7 @@ Reads an `html` formatted table.
 
 import copy
 import logging
+from itertools import product
 
 import numpy as np
 import requests
@@ -104,6 +105,10 @@ def makearray(html_table):
                 if rowspan:
                     for spanned_row in range(row_counter + 1, row_counter + int(rowspan)):
                         array[spanned_row, col_counter] = cell_data
+                # Fill intersection (corner) cells when both rowspan and colspan are set
+                if rowspan and colspan:
+                    for r, c in product(range(1, int(rowspan)), range(1, int(colspan))):
+                        array[row_counter + r, col_counter + c] = cell_data
 
                 # record column skipping index
                 if row_dim[row_dim_counter] > 1:

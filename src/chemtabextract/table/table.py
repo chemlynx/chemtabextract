@@ -12,7 +12,7 @@ import numpy as np
 
 from chemtabextract.exceptions import InputError, MIPSError, TDEError
 from chemtabextract.input import from_any
-from chemtabextract.output.print import as_string, list_as_PrettyTable, print_table
+from chemtabextract.output.print import as_string, list_as_pretty_table, print_table
 from chemtabextract.output.to_csv import write_to_csv
 from chemtabextract.output.to_pandas import build_category_table, to_pandas
 from chemtabextract.table.algorithms import (
@@ -520,7 +520,7 @@ class Table:
     def __str__(self):
         """As the user wants to see it"""
         log.debug(f"Printing table: {self._file_path}")
-        t = list_as_PrettyTable(self.category_table)
+        t = list_as_pretty_table(self.category_table)
         return str(t)
 
     def __repr__(self):
@@ -534,7 +534,7 @@ class Table:
                 (self._pre_cleaned_table, np.full((1, array_width), "", dtype="<U60"), self.labels)
             )
         )
-        t = list_as_PrettyTable(self.category_table)
+        t = list_as_pretty_table(self.category_table)
         return intro + "\n\n" + input_string + results_string + str(t)
 
 

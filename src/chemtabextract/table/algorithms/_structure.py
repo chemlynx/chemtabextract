@@ -162,9 +162,10 @@ def prefix_duplicate_labels(table_object, array):
     prefixed = False
 
     # 2. DO THE PREFIXING
-    # prefixing of column headers
-    if prefixed_row_or_column(array):
-        row_index, new_row = prefixed_row_or_column(array)
+    # prefixing of column headers — assign result once to avoid a second O(n×m) scan
+    _col_prefix = prefixed_row_or_column(array)
+    if _col_prefix:
+        row_index, new_row = _col_prefix
         # only perform prefixing if not below of header region (above is allowed!)
         # to allow prefixing even below the old header region cannot be right
         if row_index <= cc2[0]:
@@ -174,9 +175,10 @@ def prefix_duplicate_labels(table_object, array):
             prefixed = True
             prefixed_table = np.insert(array, row_index, new_row, axis=0)
 
-    # prefixing of row headers
-    if prefixed_row_or_column(array.T):
-        column_index, new_column = prefixed_row_or_column(array.T)
+    # prefixing of row headers — assign result once to avoid a second O(n×m) scan
+    _row_prefix = prefixed_row_or_column(array.T)
+    if _row_prefix:
+        column_index, new_column = _row_prefix
         # only perform prefixing if not to the right of header region (to the left is allowed!)
         # to allow prefixing even below the old header region cannot be right
         if column_index <= cc2[1]:

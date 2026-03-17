@@ -66,18 +66,28 @@ class CellParser:
 
     def cut(self, table, method="match"):
         """
-        Inputs a table and yields a tuple with the index of the next matching cell, as well as a string
-        that is obtained from the original string by cutting out the match string.
+        Inputs a 2-D table and yields a tuple with the index of the next matching cell,
+        as well as a string that is obtained from the original string by cutting out the
+        match string.
+
+        .. note::
+            ``table`` **must** be a 2-D numpy array.  Passing a 1-D array raises
+            ``ValueError`` because the indexing semantics are undefined for that case.
 
         :param method:  `search`, `match` or `fullmatch`; see Python `Regular expressions <https://docs.python.org/3.6/library/re.html>`_
         :type method: str
-        :param table: Input table to be parsed, of type 'numpy.ndarray'
+        :param table: 2-D input table to be parsed
         :type table: numpy.array
         :yield: (int, int, str) with index of cells and the strings of the groups that were matched
 
         """
         # check if table is of correct type
         assert isinstance(table, np.ndarray)
+        if table.ndim != 2:
+            raise ValueError(
+                f"CellParser.cut() requires a 2-D array, got ndim={table.ndim}. "
+                "Use a 2-D table as input."
+            )
 
         prog = re.compile(self.pattern)
         for result in self.parse(table, method):
