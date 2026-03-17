@@ -83,6 +83,11 @@ class Table:
         self._configs = self._set_configs(**kwargs)
         self._history = History()
         self._raw_table_cache: np.ndarray | None = None
+        # Caches for CC4 and CC3 — populated at the end of _analyze_table.
+        # Cleared at the start of every _analyze_table call so that transpose()
+        # forces a full recomputation.
+        self.__cc4_cache: tuple | None = None
+        self.__cc3_cache: tuple | None = None
         self._analyze_table()
 
     @property
@@ -124,7 +129,21 @@ class Table:
     def _analyze_table(self):
         """
         Performs the analysis of the input table and is run automatically on initialization of the table object.
+
+        Ordering constraints (do not reorder these steps):
+          1. ``pre_clean()`` must run before ``_cc4`` is first accessed — CC4 is
+             computed from ``_pre_cleaned_table``, which does not exist before this.
+          2. ``duplicate_spanning_cells()`` must complete before ``find_cc1_cc2()``
+             uses ``_cc4`` — the spanning-cell pass changes ``_pre_cleaned_table``
+             and the CC4 from the intermediate state is intentionally passed in.
+          3. ``self._cc2`` must be set before ``self._cc3`` is accessed — CC3 is
+             derived from CC2.
         """
+        # Clear caches so that a fresh _analyze_table (e.g. after transpose())
+        # recomputes CC4 and CC3 from the new table state.
+        self.__cc4_cache = None
+        self.__cc3_cache = None
+
         # Fetch source data once; all raw_table accesses below use the cache.
         self._raw_table_cache = self._load_raw_table()
 
@@ -134,12 +153,16 @@ class Table:
             log.critical(msg)
             raise InputError(msg)
 
-        # clean-up the input array
+        # Prerequisite for step 1: clean-up the input array.
+        # _pre_cleaned_table must exist before _cc4 is accessed.
         self._pre_cleaned_table = pre_clean(self.raw_table)
         log.debug(
             f"Table shape changed from {np.shape(self.raw_table)} to {np.shape(self.pre_cleaned_table)}."
         )
 
+        # Step 2 prerequisite: spanning cells are processed with an intermediate
+        # _pre_cleaned_table; _cc4 is computed inside duplicate_spanning_cells
+        # using this pre-spanning state, which is intentional.
         if self.configs["use_spanning_cells"]:
             self._pre_cleaned_table = duplicate_spanning_cells(self, self._pre_cleaned_table)
 
@@ -153,7 +176,8 @@ class Table:
             if self.configs["use_footnotes"]:
                 self._copy_footnotes(footnote)
 
-        # Main MIPS algorithm, finding the data and header regions
+        # Main MIPS algorithm — step 2: find_cc1_cc2 uses _cc4 computed from
+        # the fully-prepared _pre_cleaned_table (post spanning-cells/prefixing).
         try:
             #: Critical cells `CC1` and `CC2`
             self._cc1, self._cc2 = find_cc1_cc2(self, self._cc4, self._pre_cleaned_table)
@@ -169,9 +193,14 @@ class Table:
             self._cc2 = header_extension_down(self, self._cc1, self._cc2, self._cc4)
             log.debug(f"Header extension, new cc1 = {self._cc1}, new cc2 = {self._cc2}")
 
-        # Validate CC3; MIPSError propagates naturally if it cannot be found.
-        # Prerequisite: self._cc2 must be set before this line.
+        # Step 3: validate CC3 — self._cc2 must be set before this line.
+        # MIPSError propagates naturally if CC3 cannot be found.
         _ = self._cc3
+
+        # Cache CC4 and CC3 now that the table is fully prepared.
+        # Subsequent property accesses return the cached values.
+        self.__cc4_cache = find_cc4(self)
+        self.__cc3_cache = find_cc3(self, self._cc2)
 
     @property
     def footnotes(self):
@@ -457,12 +486,26 @@ class Table:
 
     @property
     def _cc4(self):
-        """Critical cell `CC4`."""
+        """Critical cell ``CC4``.
+
+        Returns the cached value when available (after ``_analyze_table``
+        completes).  Falls back to a fresh computation during the analysis
+        pipeline itself, where intermediate table states are in play.
+        """
+        if self.__cc4_cache is not None:
+            return self.__cc4_cache
         return find_cc4(self)
 
     @property
     def _cc3(self):
-        """Critical cell `CC3`."""
+        """Critical cell ``CC3``.
+
+        Returns the cached value when available (after ``_analyze_table``
+        completes).  Falls back to a fresh computation during the analysis
+        pipeline itself.
+        """
+        if self.__cc3_cache is not None:
+            return self.__cc3_cache
         return find_cc3(self, self._cc2)
 
     def _set_configs(self, **kwargs):
