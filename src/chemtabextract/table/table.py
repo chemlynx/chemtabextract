@@ -7,6 +7,7 @@ Represents a table in a highly standardized format.
 
 import contextlib
 import logging
+from collections.abc import Iterator
 
 import numpy as np
 
@@ -280,7 +281,7 @@ class Table:
         return self._configs.copy()
 
     @contextlib.contextmanager
-    def _override_config(self, key: str, value: object):
+    def _override_config(self, key: str, value: object) -> Iterator[None]:
         """Temporarily override a single config key for the duration of a ``with`` block.
 
         Args:
@@ -510,8 +511,8 @@ class Table:
 
     def _set_configs(self, **kwargs):
         """Sets the configuration parameters based on the user input."""
-        defaults = self._default_configs  # access once; property creates a new dict each time
-        configs = defaults
+        defaults = self._default_configs
+        configs = defaults.copy()
         for key, value in kwargs.items():
             if key in defaults:
                 configs[key] = value

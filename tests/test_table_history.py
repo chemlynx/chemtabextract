@@ -116,9 +116,60 @@ class TestHistoryRepr:
         assert r.count("False") == 8
 
     def test_repr_reflects_updated_flag(self) -> None:
-        """repr() should show True once a flag is set."""
+        """repr() should show True once a flag is set via the public setter."""
         h = History()
-        h._table_transposed = True
+        h.set_table_transposed(True)
+        assert "True" in repr(h)
+
+
+class TestHistorySetterApi:
+    """Each set_*() method must update its backing attribute via the public setter.
+
+    These tests exercise the setter API introduced in Q3 directly — calling
+    the setter method and asserting the public property reflects the result.
+    This is distinct from ``TestHistoryPropertySetters``, which validates the
+    property getters by bypassing the setter (testing the underlying attribute
+    access directly).
+    """
+
+    _SETTER_PROP_PAIRS = [
+        ("set_title_row_removed", "title_row_removed"),
+        ("set_prefixing_performed", "prefixing_performed"),
+        ("set_prefixed_rows", "prefixed_rows"),
+        ("set_footnotes_copied", "footnotes_copied"),
+        ("set_spanning_cells_extended", "spanning_cells_extended"),
+        ("set_header_extended_up", "header_extended_up"),
+        ("set_header_extended_down", "header_extended_down"),
+        ("set_table_transposed", "table_transposed"),
+    ]
+
+    @pytest.mark.parametrize(
+        ("setter_name", "prop_name"),
+        _SETTER_PROP_PAIRS,
+        ids=[pair[1] for pair in _SETTER_PROP_PAIRS],
+    )
+    def test_setter_true_reflected_in_property(self, setter_name: str, prop_name: str) -> None:
+        """Calling set_*(True) should be immediately visible via the property."""
+        h = History()
+        getattr(h, setter_name)(True)
+        assert getattr(h, prop_name) is True
+
+    @pytest.mark.parametrize(
+        ("setter_name", "prop_name"),
+        _SETTER_PROP_PAIRS,
+        ids=[pair[1] for pair in _SETTER_PROP_PAIRS],
+    )
+    def test_setter_false_resets_property(self, setter_name: str, prop_name: str) -> None:
+        """Calling set_*(False) after set_*(True) should reset the property."""
+        h = History()
+        getattr(h, setter_name)(True)
+        getattr(h, setter_name)(False)
+        assert getattr(h, prop_name) is False
+
+    def test_repr_reflects_flag_set_via_setter(self) -> None:
+        """repr() should show True for a flag set via the setter method."""
+        h = History()
+        h.set_table_transposed(True)
         assert "True" in repr(h)
 
 

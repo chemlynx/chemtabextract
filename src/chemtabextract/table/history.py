@@ -78,7 +78,14 @@ class History:
     # ------------------------------------------------------------------
 
     def set_title_row_removed(self, value: bool) -> None:
-        """Set the ``title_row_removed`` flag."""
+        """Set the ``title_row_removed`` flag.
+
+        Note:
+            Currently never called by the core algorithm — the title row is
+            labelled as ``"TableTitle"`` but not excised from
+            ``pre_cleaned_table``.  Reserved for future use if physical removal
+            is ever implemented.
+        """
         self._title_row_removed = value
 
     def set_prefixing_performed(self, value: bool) -> None:

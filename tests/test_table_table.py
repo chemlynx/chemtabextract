@@ -1092,3 +1092,104 @@ def test_single_row_col_3():
         ["0.208", ["Test7"], ["This study"]],
     ]
     _do_single_row_col("./tests/data/te_03.csv", expected, expected_t, expected_cat, expected_cat_t)
+
+
+# ---------------------------------------------------------------------------
+# Table.configs returns a copy — Q4
+# ---------------------------------------------------------------------------
+
+
+class TestTableConfigsProperty:
+    """Table.configs must return a copy of the live config dict, not the dict itself."""
+
+    def test_configs_returns_dict(self) -> None:
+        """configs property should return a dict object."""
+        table = Table("./tests/data/table_example1.csv")
+        assert isinstance(table.configs, dict)
+
+    def test_configs_successive_calls_return_different_objects(self) -> None:
+        """Each call to configs should return a new dict object."""
+        table = Table("./tests/data/table_example1.csv")
+        assert table.configs is not table.configs
+
+    def test_configs_mutation_does_not_affect_live_config(self) -> None:
+        """Mutating the returned dict must not change the table's internal config.
+
+        This is the key correctness property of Q4: external callers cannot
+        accidentally corrupt Table state by modifying the returned dict.
+        """
+        table = Table("./tests/data/table_example1.csv")
+        original_value = table.configs["use_title_row"]
+
+        # Flip the value in the returned copy.
+        returned = table.configs
+        returned["use_title_row"] = not original_value
+
+        # The internal config must be unchanged.
+        assert table._configs["use_title_row"] == original_value
+
+    def test_configs_contains_expected_keys(self) -> None:
+        """configs dict should contain all documented configuration keys."""
+        table = Table("./tests/data/table_example1.csv")
+        expected_keys = {
+            "use_title_row",
+            "use_prefixing",
+            "use_footnotes",
+            "use_spanning_cells",
+            "use_header_extension",
+            "use_max_data_area",
+            "standardize_empty_data",
+            "row_header",
+            "col_header",
+        }
+        assert expected_keys == set(table.configs.keys())
+
+
+# ---------------------------------------------------------------------------
+# Table._override_config context manager — Q4
+# ---------------------------------------------------------------------------
+
+
+class TestOverrideConfig:
+    """_override_config must temporarily override a config key and always restore it."""
+
+    def test_value_is_overridden_inside_with_block(self) -> None:
+        """The config key should hold the override value inside the with block."""
+        table = Table("./tests/data/table_example1.csv")
+        original = table._configs["use_title_row"]
+
+        with table._override_config("use_title_row", not original):
+            assert table._configs["use_title_row"] is not original
+
+    def test_original_value_restored_after_clean_exit(self) -> None:
+        """The original value must be restored after the with block exits normally."""
+        table = Table("./tests/data/table_example1.csv")
+        original = table._configs["use_title_row"]
+
+        with table._override_config("use_title_row", not original):
+            pass  # do nothing — just let the block exit
+
+        assert table._configs["use_title_row"] is original
+
+    def test_original_value_restored_after_exception(self) -> None:
+        """The original value must be restored even when an exception is raised inside the block."""
+        table = Table("./tests/data/table_example1.csv")
+        original = table._configs["use_title_row"]
+
+        try:
+            with table._override_config("use_title_row", not original):
+                raise RuntimeError("deliberate test exception")
+        except RuntimeError:
+            pass
+
+        assert table._configs["use_title_row"] is original
+
+    def test_override_does_not_affect_other_keys(self) -> None:
+        """Overriding one key must leave all other config keys unchanged."""
+        table = Table("./tests/data/table_example1.csv")
+        configs_before = table.configs  # copy of all keys
+
+        with table._override_config("use_title_row", False):
+            for key, value in configs_before.items():
+                if key != "use_title_row":
+                    assert table._configs[key] == value

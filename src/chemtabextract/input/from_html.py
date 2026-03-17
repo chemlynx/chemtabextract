@@ -8,7 +8,7 @@ from itertools import product
 
 import numpy as np
 import requests
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup, Tag
 
 from chemtabextract.exceptions import InputError
 
@@ -25,7 +25,7 @@ except ImportError:
 log = logging.getLogger(__name__)
 
 
-def makearray(html_table) -> np.ndarray:
+def makearray(html_table: Tag) -> np.ndarray:
     """
     Creates a numpy array from an `.html` file, taking `rowspan` and `colspan` into account.
 
@@ -42,8 +42,9 @@ def makearray(html_table) -> np.ndarray:
         col_tags = row.find_all(["td", "th"])
         if len(col_tags) > 0:
             n_rows += 1
-            if len(col_tags) > n_cols:
-                n_cols = len(col_tags)
+            row_logical_width = sum(int(tag.get("colspan", 1)) for tag in col_tags)
+            if row_logical_width > n_cols:
+                n_cols = row_logical_width
 
     # Use object dtype as a build buffer so no cell text is truncated during
     # iteration.  The array is cast to a narrow Unicode dtype at the end.
@@ -112,9 +113,10 @@ def makearray(html_table) -> np.ndarray:
                     for r, c in product(range(1, int(rowspan)), range(1, int(colspan))):
                         array[row_counter + r, col_counter + c] = cell_data
 
-                # record column skipping index
+                # record column skipping index for every column spanned by this cell
                 if row_dim[row_dim_counter] > 1:
-                    this_skip_index[col_counter] = row_dim[row_dim_counter]
+                    for spanned_c in range(col_counter, col_counter + col_dim[col_dim_counter]):
+                        this_skip_index[spanned_c] = row_dim[row_dim_counter]
 
         # adjust row counter
         row_counter += 1
