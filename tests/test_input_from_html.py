@@ -1,23 +1,28 @@
-"""Tests for chemtabextract.input.from_html — read_file and makearray.
+"""Tests for chemtabextract.input.from_html — read_file, makearray, read_url, configure_selenium.
 
-Covers the context-manager open (resource-safety fix) and the
-IndexError → InputError conversion for out-of-range table_number values.
-Both paths were modified in commit f2edc1f; from_html had only 10% branch
-coverage before this file.
+Covers:
+- read_file: context-manager open and IndexError → InputError conversion (TC1 pre-existing)
+- makearray: colspan/rowspan corner-cell fill (Q6) and dynamic dtype (Q7)
+- read_url: happy path via requests mock, error paths, and Selenium fallback (TC1 new)
+- configure_selenium: Firefox driver construction and unknown-browser fallback (TC1 new)
 
-HTML fixtures are written inline via tmp_path to keep the test data
-self-documenting and avoid adding files to tests/data/.
+All read_url and configure_selenium tests use unittest.mock.patch to avoid any
+real network calls or browser processes.  The patch target is always the
+fully-qualified name inside the from_html module, e.g.
+``chemtabextract.input.from_html.requests.get``.
 """
 
 import logging
 from pathlib import Path
+from unittest.mock import MagicMock, patch
 
 import numpy as np
 import pytest
+import requests
 from bs4 import BeautifulSoup
 
 from chemtabextract.exceptions import InputError
-from chemtabextract.input.from_html import makearray, read_file
+from chemtabextract.input.from_html import configure_selenium, makearray, read_file, read_url
 
 # ---------------------------------------------------------------------------
 # Inline HTML content used across multiple tests
@@ -318,3 +323,194 @@ class TestMakearrayDynamicDtype:
 
         warning_messages = [r.message for r in caplog.records if r.levelno >= logging.WARNING]
         assert not warning_messages
+
+
+# ---------------------------------------------------------------------------
+# Shared HTML for read_url mock tests
+# ---------------------------------------------------------------------------
+
+# A minimal 2×3 HTML page (one table, one colspan cell) used to build mock
+# responses for the read_url tests.  The table shape is 2 rows × 3 logical
+# columns; the <colspan="2"> cell in row 1 makes it exercise makearray's
+# spanning logic as well.
+_READ_URL_HTML = """\
+<html><body>
+<table>
+  <tr><td>H1</td><td>H2</td><td>H3</td></tr>
+  <tr><td colspan="2">A</td><td>B</td></tr>
+</table>
+</body></html>
+"""
+
+
+def _mock_requests_response(html: str = _READ_URL_HTML) -> MagicMock:
+    """Build a MagicMock that looks like a successful requests.Response."""
+    resp = MagicMock()
+    resp.text = html
+    return resp
+
+
+# ---------------------------------------------------------------------------
+# TestReadUrl — mock-based coverage of read_url() (TC1)
+# ---------------------------------------------------------------------------
+
+
+class TestReadUrl:
+    """Tests for read_url() using patched network dependencies.
+
+    All HTTP calls are intercepted with unittest.mock.patch so no real network
+    activity occurs.  The patch target is always the fully-qualified import
+    inside from_html, e.g. ``chemtabextract.input.from_html.requests.get``.
+    """
+
+    def test_read_url_requests_path_returns_array(self) -> None:
+        """Should return a numpy array when requests.get succeeds.
+
+        Patches requests.get to return a mock response containing a 2×3 HTML
+        table.  The patched path exercises the requests branch of read_url()
+        without any network activity.
+        """
+        with patch(
+            "chemtabextract.input.from_html.requests.get",
+            return_value=_mock_requests_response(),
+        ):
+            result = read_url("http://example.com")
+
+        assert isinstance(result, np.ndarray)
+        assert result.shape == (2, 3)
+
+    def test_read_url_raises_type_error_for_non_integer_table_number(self) -> None:
+        """Should raise TypeError when table_number is not an int."""
+        with pytest.raises(TypeError):
+            read_url("http://example.com", table_number="1")  # type: ignore[arg-type]
+
+    def test_read_url_raises_input_error_for_out_of_range_table_number(self) -> None:
+        """Should raise InputError when table_number exceeds the number of tables.
+
+        Patches requests.get to return a page with exactly one table; requesting
+        table_number=99 should raise InputError.
+        """
+        with (
+            patch(
+                "chemtabextract.input.from_html.requests.get",
+                return_value=_mock_requests_response(),
+            ),
+            pytest.raises(InputError),
+        ):
+            read_url("http://example.com", table_number=99)
+
+    def test_read_url_selenium_fallback_when_requests_fails(self) -> None:
+        """Should fall back to Selenium and return an array when requests raises ConnectionError.
+
+        Patches:
+        - requests.get → raises ConnectionError
+        - configure_selenium → returns a mock driver whose .page_source is
+          a valid HTML page
+
+        This exercises the ``except requests.exceptions.RequestException`` branch.
+        """
+        mock_driver = MagicMock()
+        mock_driver.page_source = _READ_URL_HTML
+
+        with (
+            patch(
+                "chemtabextract.input.from_html.requests.get",
+                side_effect=requests.exceptions.ConnectionError("mock network failure"),
+            ),
+            patch(
+                "chemtabextract.input.from_html._SELENIUM_AVAILABLE",
+                True,
+            ),
+            patch(
+                "chemtabextract.input.from_html.configure_selenium",
+                return_value=mock_driver,
+            ),
+        ):
+            result = read_url("http://example.com")
+
+        assert isinstance(result, np.ndarray)
+
+    def test_read_url_raises_input_error_when_selenium_unavailable(self) -> None:
+        """Should raise InputError (mentioning web extra) when requests fails and Selenium absent.
+
+        Patches requests.get to raise ConnectionError and _SELENIUM_AVAILABLE to
+        False, simulating the environment where the optional web extra is not installed.
+        """
+        with (
+            patch(
+                "chemtabextract.input.from_html.requests.get",
+                side_effect=requests.exceptions.ConnectionError("mock network failure"),
+            ),
+            patch(
+                "chemtabextract.input.from_html._SELENIUM_AVAILABLE",
+                False,
+            ),
+            pytest.raises(InputError) as exc_info,
+        ):
+            read_url("http://example.com")
+
+        assert "web" in exc_info.value.message.lower()
+
+    def test_read_url_first_table_returned_by_default(self) -> None:
+        """Default table_number=1 should return the first table on the page."""
+        two_table_page = """\
+<html><body>
+<table><tr><td>FIRST</td></tr></table>
+<table><tr><td>SECOND</td></tr></table>
+</body></html>
+"""
+        with patch(
+            "chemtabextract.input.from_html.requests.get",
+            return_value=_mock_requests_response(two_table_page),
+        ):
+            result = read_url("http://example.com")
+
+        assert result[0, 0] == "FIRST"
+
+
+# ---------------------------------------------------------------------------
+# TestConfigureSelenium — mock-based coverage of configure_selenium() (TC1)
+# ---------------------------------------------------------------------------
+
+
+class TestConfigureSelenium:
+    """Tests for configure_selenium() using patched Selenium dependencies.
+
+    configure_selenium() is only reachable in production when the optional
+    ``[web]`` extra is installed.  Here we patch the webdriver at module level
+    to avoid any real browser dependency.
+    """
+
+    def test_configure_selenium_returns_firefox_driver(self) -> None:
+        """Should call webdriver.Firefox once and return its result.
+
+        Because the optional selenium extra may not be installed, ``webdriver``
+        and ``FirefoxOptions`` may not exist in the module namespace.  We use
+        ``create=True`` to inject mock replacements regardless, then verify
+        that ``webdriver.Firefox`` is called exactly once.
+        """
+        fake_driver = MagicMock()
+        mock_webdriver = MagicMock()
+        mock_webdriver.Firefox.return_value = fake_driver
+
+        with (
+            patch(
+                "chemtabextract.input.from_html.webdriver",
+                new=mock_webdriver,
+                create=True,
+            ),
+            patch(
+                "chemtabextract.input.from_html.FirefoxOptions",
+                new=MagicMock,
+                create=True,
+            ),
+        ):
+            result = configure_selenium()
+
+        mock_webdriver.Firefox.assert_called_once()
+        assert result is fake_driver
+
+    def test_configure_selenium_returns_none_for_unknown_browser(self) -> None:
+        """Should return None for any browser name other than 'Firefox'."""
+        result = configure_selenium(browser="Chrome")
+        assert result is None

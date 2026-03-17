@@ -1,8 +1,9 @@
-"""Tests for chemtabextract.table.parse.CellParser.
+"""Tests for chemtabextract.table.parse — CellParser and StringParser.
 
-Covers the 1-D input guard added by Q5 (ValueError on ndim != 2) and the
-2-D happy path of cut(), both of which were entirely uncovered before this
-suite.
+Covers:
+- CellParser.cut(): 1-D input guard (Q5), 2-D happy path
+- CellParser.replace(): pattern substitution on matching cells (TC2)
+- StringParser.cut(): residual-string extraction on a single string (TC2)
 
 CellParser.cut() semantics:
   - Uses parse() internally to find cells matching the pattern.
@@ -12,6 +13,17 @@ CellParser.cut() semantics:
     entire cell value with ALL occurrences of the pattern globally removed
     (prog.sub("", cell)).
   - Cells that do not match are skipped entirely — they produce no output.
+
+CellParser.replace() semantics:
+  - Same pattern-matching logic as cut().
+  - For each matching cell, yields (row, col, replaced_string) where
+    replaced_string has the matched portion substituted with repl.
+  - Non-matching cells are skipped.
+
+StringParser.cut() semantics:
+  - Operates on a single string (not a 2-D array).
+  - Returns the input string with all occurrences of the pattern globally
+    removed (prog.sub("", string)).
 """
 
 import types
@@ -19,7 +31,7 @@ import types
 import numpy as np
 import pytest
 
-from chemtabextract.table.parse import CellParser  # noqa: E402
+from chemtabextract.table.parse import CellParser, StringParser  # noqa: E402
 
 # ---------------------------------------------------------------------------
 # Shared fixtures
@@ -166,3 +178,115 @@ class TestCellParserCut2D:
             assert isinstance(row, int | np.integer)
             assert isinstance(col, int | np.integer)
             assert isinstance(residual, str)
+
+
+# ---------------------------------------------------------------------------
+# CellParser.replace() tests — TC2
+# ---------------------------------------------------------------------------
+
+
+@pytest.fixture()
+def mixed_array() -> np.ndarray:
+    """2-D table with digit-prefixed cells and non-matching cells.
+
+    Layout::
+
+        [["42 apples", "oranges"],
+         ["no_digits", "7 bananas"]]
+
+    With pattern ``r"\\d+"`` and ``method="match"`` (default):
+
+    - ``(0, 0)  "42 apples"``  → matches; replace("NUM") → ``"NUM apples"``
+    - ``(0, 1)  "oranges"``    → no match; skipped
+    - ``(1, 0)  "no_digits"``  → no match; skipped
+    - ``(1, 1)  "7 bananas"``  → matches; replace("NUM") → ``"NUM bananas"``
+    """
+    return np.array(
+        [["42 apples", "oranges"], ["no_digits", "7 bananas"]],
+        dtype="<U20",
+    )
+
+
+class TestCellParserReplace:
+    """CellParser.replace() substitutes the matched pattern in each matching cell."""
+
+    def test_replace_returns_generator(self, mixed_array: np.ndarray) -> None:
+        """replace() should be lazy — it must return a generator, not a list."""
+        parser = CellParser(r"\d+")
+        result = parser.replace(mixed_array, "NUM")
+        assert isinstance(result, types.GeneratorType)
+
+    def test_replace_yields_only_matching_cells(self, mixed_array: np.ndarray) -> None:
+        """replace() should yield exactly one result per matching cell."""
+        results = list(CellParser(r"\d+").replace(mixed_array, "NUM"))
+        assert len(results) == 2
+
+    def test_replace_substitutes_pattern_in_matching_cells(self, mixed_array: np.ndarray) -> None:
+        """Matching cells should have the pattern replaced by the replacement string."""
+        results = {(r, c): s for r, c, s in CellParser(r"\d+").replace(mixed_array, "NUM")}
+        assert results[(0, 0)] == "NUM apples"
+        assert results[(1, 1)] == "NUM bananas"
+
+    def test_replace_does_not_modify_non_matching_cells(self, mixed_array: np.ndarray) -> None:
+        """Non-matching cells (0,1) and (1,0) should not appear in the output."""
+        results = {(r, c) for r, c, _ in CellParser(r"\d+").replace(mixed_array, "NUM")}
+        assert (0, 1) not in results  # "oranges" — no digits
+        assert (1, 0) not in results  # "no_digits" — starts with letter
+
+    def test_replace_result_tuple_has_three_elements(self, mixed_array: np.ndarray) -> None:
+        """Each yielded item must be a 3-tuple of (row, col, replaced_string)."""
+        for item in CellParser(r"\d+").replace(mixed_array, "NUM"):
+            assert len(item) == 3
+            row, col, replaced = item
+            assert isinstance(row, int | np.integer)
+            assert isinstance(col, int | np.integer)
+            assert isinstance(replaced, str)
+
+    def test_replace_raises_on_1d_array(self) -> None:
+        """Should raise an exception when passed a 1-D array.
+
+        Unlike cut(), replace() does not have an explicit ndim guard; it raises
+        IndexError when it tries to index the 1-D array with a 2-tuple.  The
+        important property is that it does not silently return wrong results.
+        """
+        table_1d = np.array(["42 apples", "oranges"])
+        parser = CellParser(r"\d+")
+        with pytest.raises((ValueError, AssertionError, IndexError)):
+            list(parser.replace(table_1d, "NUM"))
+
+
+# ---------------------------------------------------------------------------
+# StringParser.cut() tests — TC2
+# ---------------------------------------------------------------------------
+
+
+class TestStringParserCut:
+    """StringParser.cut() removes all occurrences of the pattern from a string."""
+
+    def test_cut_returns_string(self) -> None:
+        """cut() should return a str object."""
+        result = StringParser(r"\d+").cut("abc123def")
+        assert isinstance(result, str)
+
+    def test_cut_removes_matched_portion(self) -> None:
+        """Should globally remove the pattern from the input string."""
+        result = StringParser(r"\d+").cut("abc123def456")
+        assert result == "abcdef"
+
+    def test_cut_returns_expected_residual(self) -> None:
+        """Residual should have the matched token removed but surrounding text intact."""
+        # Pattern captures 'key=value'; cut() removes the whole match.
+        result = StringParser(r"\w+=\w+").cut("key=value remainder")
+        assert "key=value" not in result
+        assert "remainder" in result
+
+    def test_cut_returns_full_string_when_no_match(self) -> None:
+        """When the pattern does not match, the original string should be returned unchanged."""
+        original = "no match here"
+        result = StringParser(r"\d+").cut(original)
+        assert result == original
+
+    def test_cut_returns_empty_string_for_full_match(self) -> None:
+        """When the entire string matches, cut() should return an empty string."""
+        result = StringParser(r"\d+").cut("12345")
+        assert result == ""

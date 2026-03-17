@@ -89,3 +89,42 @@ def test_default_config():
     ]
     assert category_table == table.category_table
     assert labels == table.labels.tolist()
+
+
+# ---------------------------------------------------------------------------
+# TC2: TrivialTable.col_header / row_header with degenerate table sizes
+# ---------------------------------------------------------------------------
+
+
+def test_trivial_table_col_header_single_row_does_not_raise() -> None:
+    """TrivialTable.col_header should not raise for a single-row table.
+
+    A CSV with exactly one data row exercises the edge of TrivialTable's
+    critical-cell calculation.  With defaults (col_header=0, row_header=0),
+    the result may be an empty array but must not raise any exception.
+    """
+    table = TrivialTable("./tests/data/table_1row.csv")
+    result = table.col_header  # must not raise
+    # Result is either None (if _critical_cells is False) or a numpy array.
+    assert result is None or hasattr(result, "shape")
+
+
+def test_trivial_table_row_header_single_row_does_not_raise() -> None:
+    """TrivialTable.row_header should not raise for a single-row table."""
+    table = TrivialTable("./tests/data/table_1row.csv")
+    result = table.row_header  # must not raise
+    assert result is None or hasattr(result, "shape")
+
+
+def test_trivial_table_col_header_single_col_does_not_raise() -> None:
+    """TrivialTable.col_header should not raise for a single-column table."""
+    table = TrivialTable("./tests/data/table_1col.csv")
+    result = table.col_header  # must not raise
+    assert result is None or hasattr(result, "shape")
+
+
+def test_trivial_table_row_header_single_col_does_not_raise() -> None:
+    """TrivialTable.row_header should not raise for a single-column table."""
+    table = TrivialTable("./tests/data/table_1col.csv")
+    result = table.row_header  # must not raise
+    assert result is None or hasattr(result, "shape")

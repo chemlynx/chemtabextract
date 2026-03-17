@@ -1193,3 +1193,73 @@ class TestOverrideConfig:
             for key, value in configs_before.items():
                 if key != "use_title_row":
                     assert table._configs[key] == value
+
+
+# ---------------------------------------------------------------------------
+# Table.contains() — TC2
+# ---------------------------------------------------------------------------
+
+
+class TestTableContains:
+    """Table.contains() searches the category_table for a regex pattern.
+
+    The method builds a concatenated string from each category_table row
+    (data value + row categories + column categories) and returns True as
+    soon as one row matches the pattern with method="search".
+
+    table_example1.csv contains multi-level row headers ("Computational",
+    "This study", etc.) and column headers ("Rutile", "Anatase", etc.) which
+    are reflected in the category_table rows.
+    """
+
+    def test_contains_returns_true_when_cell_matches(self) -> None:
+        """Should return True when a known value appears in the category_table."""
+        table = Table("./tests/data/table_example1.csv")
+        # "Rutile" appears as a column header in the category_table.
+        assert table.contains("Rutile") is True
+
+    def test_contains_returns_false_when_no_cell_matches(self) -> None:
+        """Should return False when the pattern does not appear anywhere."""
+        table = Table("./tests/data/table_example1.csv")
+        assert table.contains("zzz_nonexistent_zzz") is False
+
+    def test_contains_with_regex_pattern(self) -> None:
+        """Should accept a regex pattern, not just a literal string.
+
+        contains() uses StringParser internally (method="search"), so any
+        valid Python regex is supported.
+        """
+        table = Table("./tests/data/table_example1.csv")
+        # Matches any cell string containing one or more digits.
+        assert table.contains(r"\d+") is True
+
+    def test_contains_literal_data_value(self) -> None:
+        """Should find a known data value present in the table."""
+        table = Table("./tests/data/table_example1.csv")
+        # "4.64" is a data cell in table_example1.csv.
+        assert table.contains("4.64") is True
+
+
+# ---------------------------------------------------------------------------
+# use_max_data_area=True config path — TC2
+# ---------------------------------------------------------------------------
+
+
+class TestUseMaxDataArea:
+    """Table should analyse correctly when use_max_data_area=True is set.
+
+    This config option was listed in IMPROVEMENTS.md TC2 as entirely untested.
+    The tests below verify the code path does not raise and produces a
+    category_table.
+    """
+
+    def test_table_constructs_with_use_max_data_area_true(self) -> None:
+        """Constructing Table with use_max_data_area=True should not raise."""
+        table = Table("./tests/data/table_example1.csv", use_max_data_area=True)
+        assert table is not None
+
+    def test_category_table_not_none_with_use_max_data_area(self) -> None:
+        """category_table should be populated when use_max_data_area=True."""
+        table = Table("./tests/data/table_example1.csv", use_max_data_area=True)
+        assert table.category_table is not None
+        assert len(table.category_table) > 0

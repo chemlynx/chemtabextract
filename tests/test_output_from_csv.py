@@ -34,6 +34,14 @@ _ROUND_TRIP_FAILURES: dict[str, str] = {
         'source uses explicit quoted-empty fields ("",""); '
         "csv.writer QUOTE_MINIMAL writes bare empty (,,)"
     ),
+    "table_1row.csv": (
+        "degenerate 1-row table causes MIPSError in Table.__init__; "
+        "intended for TrivialTable use only (TC2 test fixture)"
+    ),
+    "table_1col.csv": (
+        "degenerate 1-column table causes MIPSError in Table.__init__; "
+        "intended for TrivialTable use only (TC2 test fixture)"
+    ),
     "te_01.csv": ("source uses explicit quoted-empty fields; csv.writer writes bare empty"),
     "te_02.csv": ("source uses explicit quoted-empty fields; csv.writer writes bare empty"),
     "te_03.csv": ("source uses explicit quoted-empty fields; csv.writer writes bare empty"),
