@@ -9,7 +9,6 @@
 
 from chemtabextract.output.print import print_table  # noqa: F401
 from chemtabextract.output.to_pandas import print_category_table  # noqa: F401
-from chemtabextract.table.algorithms._categorize import categorize_header  # noqa: F401
 from chemtabextract.table.parse import CellParser
 from chemtabextract.table.table import Table
 

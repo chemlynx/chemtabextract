@@ -154,7 +154,7 @@ def prefix_duplicate_labels(table_object, array):
     log.debug("Prefixing. Attempt to run main MIPS algorithm.")
     try:
         cc1, cc2 = find_cc1_cc2(table_object, find_cc4(table_object), array)
-    except (MIPSError, TypeError):
+    except MIPSError, TypeError:
         log.error("Prefixing was not performed due to failure of MIPS algorithm.")
         return array
 
@@ -194,7 +194,7 @@ def prefix_duplicate_labels(table_object, array):
         # if new headers fail, the prefixing has destroyed the table, which is not a HIT table anymore
         try:
             cc1_new, cc2_new = find_cc1_cc2(table_object, find_cc4(table_object), prefixed_table)
-        except (MIPSError, TypeError):
+        except MIPSError, TypeError:
             log.debug("Prefixing was not performed because it destroyed the table")
             return array
         # return prefixed_table only if the prefixing has not made the header to start lower,
@@ -248,7 +248,7 @@ def duplicate_spanning_cells(table_object, array):
         cc1, cc2 = find_cc1_cc2(
             table_object, find_cc4(table_object), table_object.pre_cleaned_table
         )
-    except (MIPSError, TypeError):
+    except MIPSError, TypeError:
         log.error("Spanning cells update was not performed due to failure of MIPS algorithm.")
         return array
 
@@ -299,7 +299,7 @@ def duplicate_spanning_cells(table_object, array):
     try:
         with table_object._override_config("use_title_row", False):
             cc1, cc2 = find_cc1_cc2(table_object, find_cc4(table_object), temp2)
-    except (MIPSError, TypeError):
+    except MIPSError, TypeError:
         log.error("Spanning cells update was not performed due to failure of MIPS algorithm.")
         return array
 
