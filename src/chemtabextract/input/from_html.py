@@ -25,6 +25,24 @@ except ImportError:
 log = logging.getLogger(__name__)
 
 
+def _attr_int(value: str | list[str] | None, default: int = 1) -> int:
+    """Coerce an HTML span attribute (``colspan``/``rowspan``) to an ``int``.
+
+    BeautifulSoup types ``Tag.get`` as ``str | AttributeValueList | None``.
+    Span attributes are single-valued, so the first element is used when a
+    list is returned, and ``default`` is used for missing or empty values.
+
+    :param value: Raw attribute value from :meth:`bs4.Tag.get`.
+    :param default: Value returned when ``value`` is missing or empty.
+    :return: The attribute parsed as an integer.
+    """
+    if not value:
+        return default
+    if isinstance(value, list):
+        value = value[0]
+    return int(value)
+
+
 def makearray(html_table: Tag) -> np.ndarray:
     """
     Creates a numpy array from an `.html` file, taking `rowspan` and `colspan` into account.
@@ -38,11 +56,11 @@ def makearray(html_table: Tag) -> np.ndarray:
     n_cols = 0
     n_rows = 0
 
-    for row in html_table.findAll("tr"):
+    for row in html_table.find_all("tr"):
         col_tags = row.find_all(["td", "th"])
         if len(col_tags) > 0:
             n_rows += 1
-            row_logical_width = sum(int(tag.get("colspan", 1)) for tag in col_tags)
+            row_logical_width = sum(_attr_int(tag.get("colspan")) for tag in col_tags)
             if row_logical_width > n_cols:
                 n_cols = row_logical_width
 
@@ -55,7 +73,7 @@ def makearray(html_table: Tag) -> np.ndarray:
 
     # iterating over each row in the table
     row_counter = 0
-    for row in html_table.findAll("tr"):
+    for row in html_table.find_all("tr"):
         # skip row if it's empty
         if len(row.find_all(["td", "th"])) == 0:
             continue
@@ -73,17 +91,11 @@ def makearray(html_table: Tag) -> np.ndarray:
             for col in columns:
                 # determine all cell dimensions
                 colspan = col.get("colspan")
-                if not colspan:
-                    col_dim.append(1)
-                else:
-                    col_dim.append(int(colspan))
+                col_dim.append(_attr_int(colspan))
                 col_dim_counter += 1
 
                 rowspan = col.get("rowspan")
-                if not rowspan:
-                    row_dim.append(1)
-                else:
-                    row_dim.append(int(rowspan))
+                row_dim.append(_attr_int(rowspan))
                 row_dim_counter += 1
 
                 # adjust column counter
@@ -103,14 +115,14 @@ def makearray(html_table: Tag) -> np.ndarray:
 
                 # Insert data into neighbouring rowspan/colspan cells
                 if colspan:
-                    for spanned_col in range(col_counter + 1, col_counter + int(colspan)):
+                    for spanned_col in range(col_counter + 1, col_counter + _attr_int(colspan)):
                         array[row_counter, spanned_col] = cell_data
                 if rowspan:
-                    for spanned_row in range(row_counter + 1, row_counter + int(rowspan)):
+                    for spanned_row in range(row_counter + 1, row_counter + _attr_int(rowspan)):
                         array[spanned_row, col_counter] = cell_data
                 # Fill intersection (corner) cells when both rowspan and colspan are set
                 if rowspan and colspan:
-                    for r, c in product(range(1, int(rowspan)), range(1, int(colspan))):
+                    for r, c in product(range(1, _attr_int(rowspan)), range(1, _attr_int(colspan))):
                         array[row_counter + r, col_counter + c] = cell_data
 
                 # record column skipping index for every column spanned by this cell
@@ -213,7 +225,7 @@ def read_url(url: str, table_number: int = 1) -> np.ndarray:
 
     # first try the requests package, if it fails do the selenium, which is much slower
     try:
-        html_file = requests.get(url)
+        html_file = requests.get(url, timeout=30)
         html_soup = BeautifulSoup(html_file.text, features="lxml")
         try:
             html_table = html_soup.find_all("table")[table_number - 1]

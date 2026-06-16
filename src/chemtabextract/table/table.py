@@ -182,7 +182,7 @@ class Table:
         try:
             #: Critical cells `CC1` and `CC2`
             self._cc1, self._cc2 = find_cc1_cc2(self, self._cc4, self._pre_cleaned_table)
-        except (MIPSError, TypeError):
+        except MIPSError, TypeError:
             msg = "ERROR: Main MIPS Algorithm failed. Maybe the input table is bad!"
             log.critical(msg)
             raise MIPSError(msg)
